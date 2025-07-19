@@ -48,47 +48,6 @@ class ManageTeamsAndPeople extends Component {
     return personToTeam;
   };
 
-  onDragEnd = (result) => {
-    const { destination, source, draggableId } = result;
-    if (!destination) return;
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) return;
-
-    const { teams } = this.props;
-    const personToTeam = this.getPersonToTeamMap();
-    const personName = draggableId;
-
-    const sourceIsTeam = source.droppableId.startsWith("team-");
-    const destIsTeam = destination.droppableId.startsWith("team-");
-
-    if (source.droppableId === destination.droppableId) {
-      if (sourceIsTeam) {
-        const teamIndex = parseInt(source.droppableId.split("-")[1], 10);
-        const team = teams[teamIndex];
-        const newMembers = Array.from(team.members);
-        newMembers.splice(source.index, 1);
-        newMembers.splice(destination.index, 0, personName);
-        this.props.updateTeamMembers(teamIndex, newMembers);
-      }
-    } else {
-      if (personToTeam[personName] !== null) {
-        const oldTeamIndex = personToTeam[personName];
-        const oldTeam = teams[oldTeamIndex];
-        const newMembers = oldTeam.members.filter((m) => m !== personName);
-        this.props.updateTeamMembers(oldTeamIndex, newMembers);
-      }
-      if (destIsTeam) {
-        const newTeamIndex = parseInt(destination.droppableId.split("-")[1], 10);
-        const newTeam = teams[newTeamIndex];
-        const newMembers = newTeam.members ? [...newTeam.members] : [];
-        newMembers.splice(destination.index, 0, personName);
-        this.props.updateTeamMembers(newTeamIndex, newMembers);
-      }
-    }
-  };
-
   handleRemovePerson = (personName) => {
     const personIndex = this.props.people.findIndex(p => p.name === personName);
     if (personIndex === -1) return;
@@ -231,17 +190,84 @@ class ManageTeamsAndPeople extends Component {
       addingPerson,
       addPersonNameInput,
       } = this.state;
-    const filteredTeams = teams.filter(
-      team => new Date(team.date).getMonth() === new Date().getMonth()
-    ); 
+    // inside render()
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
-    this.sortTeamNames();
+    // Filter teams for current month
+    const filteredTeams = teams
+      .filter(team => {
+        const teamDate = new Date(team.date);
+        return teamDate.getMonth() === currentMonth && teamDate.getFullYear() === currentYear;
+      })
+      .map((team, index) => ({
+        ...team,
+        index, // keep original index for updating
+        members: (team.members || []).filter(memberName =>
+          people.some(p => p.name === memberName)
+        ),
+      }));
 
-    const assignedPeople = new Set();
-    teams.forEach((team) => {
-      if (team.members) team.members.forEach((m) => assignedPeople.add(m));
+    // Map person -> team index (for current month)
+    const personToTeamMap = {};
+    filteredTeams.forEach((team, idx) => {
+      (team.members || []).forEach(memberName => {
+        personToTeamMap[memberName] = idx;
+      });
     });
-    const unassignedPeople = people.filter((p) => !assignedPeople.has(p.name));
+    people.forEach(p => {
+      if (!personToTeamMap.hasOwnProperty(p.name)) {
+        personToTeamMap[p.name] = null;
+      }
+    });
+
+    // Unassigned people for this month
+    const unassignedPeople = people.filter(p => personToTeamMap[p.name] === null);
+
+    const onDragEnd = (result) => {
+      const { destination, source, draggableId } = result;
+      if (!destination) return;
+      if (
+        destination.droppableId === source.droppableId &&
+        destination.index === source.index
+      ) return;
+
+      const { teams } = this.props;
+      const personToTeam = this.getPersonToTeamMap();
+      const personName = draggableId;
+
+      const sourceIsTeam = source.droppableId.startsWith("team-");
+      const destIsTeam = destination.droppableId.startsWith("team-");
+
+      if (source.droppableId === destination.droppableId) {
+        if (sourceIsTeam) {
+          const teamIndex = parseInt(source.droppableId.split("-")[1], 10);
+          const team = filteredTeams[teamIndex];
+          const newMembers = Array.from(team.members);
+          newMembers.splice(source.index, 1);
+          newMembers.splice(destination.index, 0, draggableId);
+          this.props.updateTeamMembers(team.index, newMembers);
+        }
+      } else {
+        // Remove from old team (if any)
+        const oldTeamIndex = personToTeamMap[draggableId];
+        if (oldTeamIndex !== null) {
+          const oldTeam = filteredTeams[oldTeamIndex];
+          const newMembers = oldTeam.members.filter(m => m !== draggableId);
+          this.props.updateTeamMembers(oldTeam.index, newMembers);
+        }
+
+        // Add to new team
+        if (destIsTeam) {
+          const newTeamIndex = parseInt(destination.droppableId.split("-")[1], 10);
+          const newTeam = filteredTeams[newTeamIndex];
+          const newMembers = newTeam.members ? [...newTeam.members] : [];
+          newMembers.splice(destination.index, 0, draggableId);
+          this.props.updateTeamMembers(newTeam.index, newMembers);
+        }
+      }
+    };
+
 
     const getItemStyle = (isDragging, draggableStyle) => ({
       userSelect: 'none',
@@ -481,7 +507,7 @@ class ManageTeamsAndPeople extends Component {
           )}
         </Box>
 
-        <DragDropContext onDragEnd={this.onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, overflowX: 'hidden' }}>
             {/* Unassigned salespeople */}
             <Box>
