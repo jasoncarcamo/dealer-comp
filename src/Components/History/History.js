@@ -225,6 +225,34 @@ class History extends Component {
     return salesSum;
   }
 
+  getSalesForPeriodPerPerson(date) {
+    const { salesData, people } = this.props;
+
+    if (!Array.isArray(people) || !Array.isArray(salesData)) return {};
+
+    const month = new Date(date).getMonth();
+    const year = new Date(date).getFullYear();
+    const filteredEntries = salesData.filter((entry) => {
+      const entryDate = new Date(entry.date);
+
+      return entryDate.getMonth() === month && entryDate.getFullYear() === year;
+    });
+
+    const salesSum = {};
+
+    people.forEach((p) => {
+      salesSum[p.name] = 0;
+    });
+
+    filteredEntries.forEach((entry) => {
+      people.forEach((p) => {
+        salesSum[p.name] += entry[p.name] || 0;
+      });
+    });
+
+    return salesSum;
+  }
+
   filterSalesDataForCurrentMonth(month) {
     const { salesData } = this.props;
     if (!Array.isArray(salesData) || salesData.length === 0) return [];
@@ -703,12 +731,11 @@ html += `</body></html>`;
 
                 filteredSales.forEach((team) => {
                   team.members.forEach(member => {
-                    teamSales[member] = salesForPeriod[member] || 0;
+                    teamSales[member] = this.getSalesForPeriodPerPerson(team.date)[member] || 0;
                     teamTotal[team.name] = teamSales[member] || 0 + Number(salesForPeriod[member]);
                   })
                 });
                 
-                console.log(teamTotal)
                 return (
                   <TableRow key={month}>
                     <TableCell>{month}</TableCell>

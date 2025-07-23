@@ -5,6 +5,8 @@ import {
   Button,
   Paper,
   Box,
+  MenuItem,
+  Select
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import "./ManageTeamsAndPeople.css"
@@ -69,6 +71,52 @@ class ManageTeamsAndPeople extends Component {
     }
   };
 
+  getPersonToTeamMap = () => {
+    const { teams, people } = this.props;
+    const personToTeam = {};
+    teams.forEach((team, i) => {
+      (team.members || []).forEach((m) => (personToTeam[m] = i));
+    });
+    people.forEach((p) => {
+      if (!personToTeam.hasOwnProperty(p.name)) personToTeam[p.name] = null;
+    });
+    return personToTeam;
+  };
+
+  handleAssignToTeam = (personName, teamId, currentTeamId) => {
+    const { teams} = this.props;
+    const teamIndex = teams.findIndex((t) => t.id === teamId);
+    const currentTeamIndex = teams.findIndex((t) => t.id === currentTeamId);
+
+    if (teamIndex === -1) return;
+    for(const index in teams){
+      console.log(teams[teamIndex].members)
+      if(teams[teamIndex].members.findIndex( member => member === teamId)){
+      }
+    }
+
+    for(const i in teams){
+      if(teams[i].id === currentTeamId){
+        const memberIndex = teams[i].members.findIndex(person => person === personName);
+
+        if(memberIndex > -1){
+          console.log(teams[i].members.splice(memberIndex))
+          this.handleRemoveFromTeam(personName, currentTeamId)
+        }
+      }
+    }
+    const newMembers = [...(teams[teamIndex].members || []), personName];
+    this.props.updateTeamMembers(teamIndex, newMembers);
+  };
+
+  handleRemoveFromTeam = (personName, teamId) => {
+    const { teams } = this.props;
+    const teamIndex = teams.findIndex((t) => t.id === teamId);
+    if (teamIndex === -1) return;
+    const newMembers = teams[teamIndex].members.filter((m) => m !== personName);
+    this.props.updateTeamMembers(teamIndex, newMembers);
+  };
+
   startAddingTeam = () => {
     this.setState({
       addingTeam: true,
@@ -119,15 +167,6 @@ class ManageTeamsAndPeople extends Component {
       this.props.removeTeam(teamIndex);
     }
   };
-
-  /*handleRemovePerson = (personName) => {
-    const personIndex = this.props.people.findIndex(p => p.name === personName);
-    if (personIndex === -1) return;
-
-    if (window.confirm(`Are you sure you want to remove salesperson "${personName}"?`)) {
-      this.props.removePerson(personIndex);
-    }
-  }*/
 
   startEditingTeam = (index, currentName, currentColor) => {
     this.setState({ editingTeamIndex: index, editingTeamName: currentName, editingTeamColor: currentColor });
@@ -198,15 +237,22 @@ class ManageTeamsAndPeople extends Component {
     const filteredTeams = teams
       .filter(team => {
         const teamDate = new Date(team.date);
+
+        if(teamDate.getMonth() === currentMonth && teamDate.getFullYear() === currentYear){
+          console.log(team)
+        }
         return teamDate.getMonth() === currentMonth && teamDate.getFullYear() === currentYear;
-      })
-      .map((team, index) => ({
-        ...team,
-        index, // keep original index for updating
-        members: (team.members || []).filter(memberName =>
-          people.some(p => p.name === memberName)
-        ),
-      }));
+      }).sort((a, b) => {
+        if(a.name > b.name){
+          return 1;
+        }
+
+        if(a.name < b.name){
+          return -1;
+        }
+
+        return 0;
+      });
 
     // Map person -> team index (for current month)
     const personToTeamMap = {};
@@ -287,30 +333,30 @@ class ManageTeamsAndPeople extends Component {
     });
 
     const getListStyle = (isDraggingOver) => ({
-  background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
-  padding: 6,
-  minHeight: 50,
-  maxHeight: 400,
-  borderRadius: 6,
-  border: '1px solid #EB0A1E',
-  display: 'grid',
-  gridAutoRows: 'min-content',   // 👈 each row fits its content
-  gridTemplateColumns: { 
-    sm: 'repeat(2, 1fr)', 
-    md: 'repeat(3, 1fr)' 
-  },
-  gap: '2px',                    // 👈 tight consistent spacing
-  overflowY: 'auto',
-  overflowX: 'hidden',
-  scrollbarWidth: 'thin',
-  whiteSpace: 'normal',
+      background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
+      padding: 6,
+      minHeight: 50,
+      maxHeight: 400,
+      borderRadius: 6,
+      border: '1px solid #EB0A1E',
+      display: 'grid',
+      gridAutoRows: 'min-content',   // 👈 each row fits its content
+      gridTemplateColumns: { 
+        sm: 'repeat(2, 1fr)', 
+        md: 'repeat(3, 1fr)' 
+      },
+      gap: '2px',                    // 👈 tight consistent spacing
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      scrollbarWidth: 'thin',
+      whiteSpace: 'normal',
 
-  // 👇 mobile: single tight column
-  '@media (max-width: 600px)': {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-});
+      // 👇 mobile: single tight column
+      '@media (max-width: 600px)': {
+        display: 'flex',
+        flexDirection: 'column',
+      },
+    });
 
     const getTeamListStyle = (isDraggingOver) => ({
       background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
@@ -383,15 +429,10 @@ class ManageTeamsAndPeople extends Component {
             mb: 4,
             alignItems: 'center',
             flexWrap: 'wrap',
-            '& > button': {
-              minWidth: 120,
-            },
+            '& > button': { minWidth: 120 },
             '@media (max-width: 620px)': {
               gap: 1,
-              '& > button': {
-                flexGrow: 1,
-                minWidth: 100,
-              },
+              '& > button': { flexGrow: 1, minWidth: 100 },
             },
           }}
         >
@@ -400,17 +441,7 @@ class ManageTeamsAndPeople extends Component {
               Add New Team
             </Button>
           ) : (
-            <form
-              onSubmit={(e) => { e.preventDefault(); this.saveAddingTeam(); }}
-              style={{
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-                flex: 1,
-                flexWrap: 'wrap',
-                minWidth: 0,
-              }}
-            >
+            <form onSubmit={(e) => { e.preventDefault(); this.saveAddingTeam(); }} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
               <TextField
                 label="Team name"
                 size="medium"
@@ -423,23 +454,14 @@ class ManageTeamsAndPeople extends Component {
                   maxWidth: '100%',
                   '& .MuiInputLabel-root': { color: 'gray' },
                   '& .MuiInputLabel-root.Mui-focused': { color: '#EB0A1E !important' },
-                  '& .MuiOutlinedInput-root': {
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#EB0A1E' },
-                  },
+                  '& .MuiOutlinedInput-root': { '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#EB0A1E' } },
                 }}
               />
               <input
                 type="color"
                 value={addTeamColorInput}
                 onChange={(e) => this.setState({ addTeamColorInput: e.target.value })}
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  border: 'none',
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                  borderRadius: 4,
-                }}
+                style={{ width: 32, height: 32, border: 'none', cursor: 'pointer', flexShrink: 0, borderRadius: 4 }}
               />
               <Button variant="contained" type="submit" sx={{ backgroundColor: '#EB0A1E', flexShrink: 0, minWidth: 75, whiteSpace: 'nowrap' }}>Save</Button>
               <Button variant="outlined" onClick={this.cancelAddingTeam} type="button" sx={{ flexShrink: 0, minWidth: 75, whiteSpace: 'nowrap' }}>Cancel</Button>
@@ -448,41 +470,13 @@ class ManageTeamsAndPeople extends Component {
         </Box>
 
         {/* Add Person section */}
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 2,
-            mb: 6,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            '& > button': {
-              minWidth: 120,
-            },
-            '@media (max-width: 620px)': {
-              gap: 1,
-              '& > button': {
-                flexGrow: 1,
-                minWidth: 100,
-              },
-            },
-          }}
-        >
+        <Box sx={{ display: 'flex', gap: 2, mb: 6, alignItems: 'center', flexWrap: 'wrap', '& > button': { minWidth: 120 }, '@media (max-width: 620px)': { gap: 1, '& > button': { flexGrow: 1, minWidth: 100 } } }}>
           {!addingPerson ? (
             <Button variant="contained" onClick={this.startAddingPerson} sx={{ padding: '14px 24px', backgroundColor: '#EB0A1E' }}>
               Add New Salesperson
             </Button>
           ) : (
-            <form
-              onSubmit={(e) => { e.preventDefault(); this.saveAddingPerson(); }}
-              style={{
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-                flex: 1,
-                flexWrap: 'wrap',
-                minWidth: 0,
-              }}
-            >
+            <form onSubmit={(e) => { e.preventDefault(); this.saveAddingPerson(); }} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
               <TextField
                 label="Salesperson Name"
                 size="medium"
@@ -495,11 +489,8 @@ class ManageTeamsAndPeople extends Component {
                   maxWidth: '100%',
                   '& .MuiInputLabel-root': { color: 'gray' },
                   '& .MuiInputLabel-root.Mui-focused': { color: '#EB0A1E !important' },
-                  '& .MuiOutlinedInput-root': {
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#EB0A1E' },
-                  },
+                  '& .MuiOutlinedInput-root': { '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#EB0A1E' } },
                 }}
-                variant="outlined"
               />
               <Button variant="contained" type="submit" sx={{ backgroundColor: '#EB0A1E', flexShrink: 0, minWidth: 75, whiteSpace: 'nowrap' }}>Save</Button>
               <Button variant="outlined" onClick={this.cancelAddingPerson} type="button" sx={{ flexShrink: 0, minWidth: 75, whiteSpace: 'nowrap' }}>Cancel</Button>
@@ -507,230 +498,206 @@ class ManageTeamsAndPeople extends Component {
           )}
         </Box>
 
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, overflowX: 'hidden' }}>
-            {/* Unassigned salespeople */}
-            <Box>
-              <Typography
-                variant="h6"
-                sx={{ mb: 2, fontWeight: 'bold', overflowWrap: 'break-word', wordBreak: 'break-word' }}
-              >
-                Unassigned Salespeople
-              </Typography>
-              <Droppable droppableId="unassigned" direction="vertical">
-                {(provided, snapshot) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, overflowX: 'hidden' }}>
+          {/* Unassigned salespeople */}
+          <Box>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Unassigned Salespeople
+            </Typography>
+            <Box sx={{ ...getListStyle(false), minHeight: 100 }}>
+              {unassignedPeople.length === 0 ? (
+                <Typography sx={{ textAlign: 'center' }}>No unassigned salespeople</Typography>
+              ) : (
+                unassignedPeople.map((person) => (
                   <Box
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
+                    key={person.name}
                     sx={{
-                      ...getListStyle(snapshot.isDraggingOver),
-                      overflowX: 'hidden',
-                      maxWidth: '100%',
-                      minHeight: "400px",
-                      boxSizing: 'border-box',
-                      marginBottom: 0,
-                      paddingTop: "20px !important",
+                      ...getItemStyle(false),
+                      width: '90%',
+                      minHeight: 50,
+                      margin: '0 auto 6px auto',
+                      padding: '8px 12px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderRadius: 4,
+                      backgroundColor: '#f9f9f9',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                      transition: 'background-color 0.2s ease',
+                      '&:hover': { backgroundColor: '#e3f2fd' },
+                      flexWrap: 'wrap',
                     }}
                   >
-                    {unassignedPeople.length === 0 && (
-                      <Typography sx={{ alignSelf: 'center', marginLeft: 2 }}>
-                        No unassigned salespeople
-                      </Typography>
+                    <span style={{ fontWeight: 500, flex: 1, wordBreak: 'break-word' }}>
+                      {person.name} ({getCarsSold(person.name)} cars sold)
+                    </span>
+
+                    <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                      {/* Assign dropdown */}
+                      <Select
+                        size="small"
+                        value="" // default empty
+                        displayEmpty
+                        onChange={(e) => this.handleAssignToTeam(person.name, e.target.value)}
+                        sx={{ minWidth: 80 }}
+                      >
+                        <MenuItem value="" disabled>Assign</MenuItem>
+                        {filteredTeams.map((team) => {
+                          const inTeam = team.members.includes(person.name);
+                          return (
+                            <MenuItem key={team.id} value={team.id} disabled={inTeam}>
+                              {team.name}{inTeam ? " (already in)" : ""}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+
+                      {/* Unassign button */}
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => {
+                          const currentTeam = teams.find((t) => t.members.includes(person.name));
+                          if (currentTeam) this.handleRemoveFromTeam(person.name, currentTeam.id);
+                        }}
+                        sx={{ minWidth: 28, padding: '2px 6px' }}
+                      >
+                        Unassign
+                      </Button>
+
+                      {/* Remove person */}
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => this.handleRemovePerson(person.name)}
+                        sx={{ minWidth: 28, padding: '2px 6px' }}
+                      >
+                        ×
+                      </Button>
+                    </Box>
+                  </Box>
+
+                ))
+              )}
+            </Box>
+          </Box>
+
+          {/* Teams */}
+          <Box>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Teams</Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(220px, 1fr))' }, gap: 2 }}>
+              {filteredTeams.length === 0 && <Typography sx={{ gridColumn: '1 / -1', textAlign: 'center' }}>No teams added yet</Typography>}
+              {filteredTeams.map((team, index) => (
+                <Paper key={team.name} sx={{ ...getTeamListStyle(), borderColor: team.color, padding: '0.5em 0.75em' }}>
+                  <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: team.color, fontWeight: 'bold', fontSize: '1.1rem', flexWrap: 'wrap' }}>
+                    {editingTeamIndex === index ? (
+                      <>
+                        <TextField value={editingTeamName} onChange={(e) => this.setState({ editingTeamName: e.target.value })} size="small" sx={{ flexGrow: 1, minWidth: '6rem' }} />
+                        <input type="color" value={editingTeamColor} onChange={(e) => this.setState({ editingTeamColor: e.target.value })} style={{ width: 30, height: 30, border: 'none', cursor: 'pointer' }} />
+                        <Button size="small" onClick={this.saveEditingTeam} sx={{ color: team.color }}>Save</Button>
+                        <Button size="small" onClick={this.cancelEditingTeam} sx={{ color: team.color }}>Cancel</Button>
+                      </>
+                    ) : (
+                      <>
+                        <span>{team.name}</span>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button size="small" sx={{ color: team.color }} onClick={() => this.startEditingTeam(index, team.name, team.color)}>Edit</Button>
+                          <Button size="small" sx={{ color: team.color }} onClick={() => this.handleRemoveTeam(index)}>Delete</Button>
+                        </Box>
+                      </>
                     )}
-                    {unassignedPeople.map((person, index) => (
-                      <Draggable key={person.name} draggableId={person.name} index={index}>
-                        {(provided, snapshot) => (
-                          <Box
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            sx={{
-                              ...getItemStyle(snapshot.isDragging, provided.draggableProps.style),
-                              width: '90%',
-                              height: "50px",
-                              margin: '0 auto 4px auto',
-                              paddingLeft: "15px !important"
-                            }}
-                          >
-                            <span style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                              {person.name} ({getUnassignedCarsSold(person)} cars sold)
-                            </span>
+                  </Box>
+
+                  {team.members && team.members.length > 0 ? (
+                    team.members.map((memberName) => {
+                      const member = people.find((p) => p.name === memberName);
+                      const carsSold = member ? getCarsSold(member.name) : 0;
+                      return (
+                        <Box
+                          key={memberName}
+                          sx={{
+                            ...getItemStyle(false),
+                            width: '90%',
+                            minHeight: 50,
+                            margin: '0 auto 6px auto',
+                            padding: '8px 12px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderRadius: 4,
+                            backgroundColor: '#f9f9f9',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                            transition: 'background-color 0.2s ease',
+                            '&:hover': { backgroundColor: '#e3f2fd' },
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <span style={{ fontWeight: 500, flex: 1, wordBreak: 'break-word' }}>
+                            {memberName} ({getCarsSold(memberName)} cars sold)
+                          </span>
+
+                          <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                            {/* Assign dropdown */}
+                            <Select
+                              size="small"
+                              value="" // default empty
+                              displayEmpty
+                              onChange={(e) => this.handleAssignToTeam(memberName, e.target.value,team.id)}
+                              sx={{ minWidth: 80 }}
+                            >
+                              <MenuItem value="" disabled>Assign</MenuItem>
+                              {filteredTeams.map((team) => {
+                                const inTeam = team.members.includes(memberName);
+                                return (
+                                  <MenuItem key={team.id} value={team.id} disabled={inTeam}>
+                                    {team.name}{inTeam ? " (already in)" : ""}
+                                  </MenuItem>
+                                );
+                              })}
+                            </Select>
+
+                            {/* Unassign button */}
                             <Button
                               size="small"
-                              color="error"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                this.handleRemovePerson(person.name);
+                              variant="outlined"
+                              color="warning"
+                              onClick={() => {
+                                const currentTeam = teams.find((t) => t.members.includes(memberName));
+                                if (currentTeam) this.handleRemoveFromTeam(memberName, currentTeam.id);
                               }}
+                              sx={{ minWidth: 28, padding: '2px 6px' }}
+                            >
+                              Unassign
+                            </Button>
+
+                            {/* Remove person */}
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="error"
+                              onClick={() => this.handleRemovePerson(memberName)}
+                              sx={{ minWidth: 28, padding: '2px 6px' }}
                             >
                               ×
                             </Button>
                           </Box>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </Box>
-                )}
-              </Droppable>
-            </Box>
-
-            {/* Teams in grid */}
-            <Box>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                Teams
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: 'repeat(2, minmax(220px, 1fr))',
-                  },
-                  gap: 2,
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  overflowWrap: 'break-word',
-                  wordBreak: 'break-word',
-                }}
-              >
-                {teams.length === 0 && (
-                  <Typography sx={{ gridColumn: '1 / -1', textAlign: 'center' }}>No teams added yet</Typography>
-                )}
-                {filteredTeams.map((team, index) => (
-                  <Droppable key={team.name} droppableId={`team-${index}`} direction="vertical">
-                    {(provided, snapshot) => (
-                      <Paper
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        sx={{
-                          ...getTeamListStyle(snapshot.isDraggingOver),
-                          borderColor: team.color,
-                          overflowWrap: 'break-word',
-                          wordBreak: 'break-word',
-                          padding: ".5em .75em 0 .75em !important"
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            mb: 1,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            color: team.color,
-                            fontWeight: 'bold',
-                            fontSize: '1.1rem',
-                            userSelect: 'none',
-                            gap: 1,
-                            overflowWrap: 'break-word',
-                            wordBreak: 'break-word',
-                            flexWrap: 'wrap',
-                          }}
-                        >
-                          {editingTeamIndex === index ? (
-                            <>
-                              <TextField
-                                value={editingTeamName}
-                                onChange={(e) => this.setState({ editingTeamName: e.target.value })}
-                                size="small"
-                                sx={{ flexGrow: 1, minWidth: '6rem' }}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                              <input
-                                type="color"
-                                value={editingTeamColor}
-                                onChange={(e) => this.setState({ editingTeamColor: e.target.value })}
-                                style={{ width: 30, height: 30, border: 'none', cursor: 'pointer' }}
-                              />
-                              <Button size="small" onClick={this.saveEditingTeam} sx={{ color: team.color }}>
-                                Save
-                              </Button>
-                              <Button size="small" onClick={this.cancelEditingTeam} sx={{ color: team.color }}>
-                                Cancel
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <span>{team.name}</span>
-                              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                                <Button
-                                  size="small"
-                                  sx={{ color: team.color, minWidth: 30, padding: '4px 8px' }}
-                                  onClick={() => this.startEditingTeam(index, team.name, team.color)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  size="small"
-                                  sx={{ color: team.color, minWidth: 30, padding: '4px 8px' }}
-                                  onClick={() => this.handleRemoveTeam(index)}
-                                >
-                                  Delete
-                                </Button>
-                              </Box>
-                            </>
-                          )}
                         </Box>
 
-                        {team.members && team.members.length > 0 ? (
-                          team.members.map((memberName, memberIndex) => {
-                            const member = people.find((p) => p.name === memberName);
-                            const carsSold = member ? getCarsSold(member.name) : 0;
-                            return (
-                              <Draggable
-                                key={memberName}
-                                draggableId={memberName}
-                                index={memberIndex}
-                              >
-                                {(provided, snapshot) => (
-                                  <Box
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    sx={{
-                                      ...getItemStyle(snapshot.isDragging, provided.draggableProps.style),
-                                      width: '100%',
-                                      height: "50px",
-                                      marginBottom: '2px',
-                                      boxSizing: 'border-box',
-                                      paddingLeft: "15px !important"
-                                    }}
-                                  >
-                                    <span style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                                      {memberName} ({carsSold} cars sold)
-                                    </span>
-                                    <Button
-                                      size="small"
-                                      color="error"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        this.handleRemovePerson(memberName);
-                                      }}
-                                    >
-                                      ×
-                                    </Button>
-                                  </Box>
-                                )}
-                              </Draggable>
-                            );
-                          })
-                        ) : (
-                          <Typography sx={{ color: '#888', fontStyle: 'italic', padding: '8px' }}>
-                            No members in this team
-                          </Typography>
-                        )}
-
-                        {provided.placeholder}
-                      </Paper>
-                    )}
-                  </Droppable>
-                ))}
-              </Box>
+                      );
+                    })
+                  ) : (
+                    <Typography sx={{ color: '#888', fontStyle: 'italic', padding: '8px' }}>No members in this team</Typography>
+                  )}
+                </Paper>
+              ))}
             </Box>
           </Box>
-        </DragDropContext>
+        </Box>
       </Box>
     );
+
   }
 }
 

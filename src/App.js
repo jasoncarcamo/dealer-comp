@@ -204,15 +204,13 @@ class App extends Component {
 
       newSale.id = currentSale.id
       newSale.date = currentSale.date;
-      console.log(currentSale)
+      
       for(const personIndex in currentSale.sales){
-        console.log(currentSale.sales[personIndex])
         for(const [personKey, personValue] of Object.entries(currentSale.sales[personIndex])){
           newSale[personKey] = personValue;
         };
       };
 
-      console.log(newSale)
       newSalesData.push(newSale);
     };
 
@@ -234,15 +232,11 @@ class App extends Component {
     };
     
     if(!sale.id){
-      console.log("Creating")
       FetchSales.createSale(newSale)
         .then( createdSale => {
           newSalesData.forEach((newSale, i) => {
-            console.log(newSale, sale, createdSale.createdSale)
-            if(new Date(newSale.date).getMonth() === new Date(createdSale.createdSale.date).getMonth() && newSale.id == sale.id){
-              console.log("Same time")
+            if(new Date(newSale.date).getMonth() === new Date(createdSale.createdSale.date).getMonth() && newSale.id == sale.id){  
               sale.id = createdSale.createdSale.id;
-
               newSale = sale;
             }
           });
@@ -254,20 +248,13 @@ class App extends Component {
           console.log(err);
         });
     } else{
-      console.log("Updating")
       FetchSales.updateSaleById(newSale, sale.id)
         .then( updatedSale => {
-          console.log(newSalesData)
           newSalesData.forEach((newSale, i) => {
-            console.log(newSale, sale, updatedSale)
             if( newSale.id === Number(updatedSale.id)){
-              console.log("found sale", newSale, updatedSale)
-
               newSalesData[i] = sale;
             };
           });
-
-          console.log(newSalesData)
           this.setState({ salesData: newSalesData }, () => {
             SalesStorage.setSale(this.state.salesData);
           });
