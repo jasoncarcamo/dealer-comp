@@ -1,0 +1,20 @@
+.tabs-container {
+  background-color: #fff;
+  border-bottom: 2px solid #1976d2;
+  margin-bottom: 1.5rem;
+}
+
+.MuiTabs-indicator {
+  background-color: #1976d2 !important;
+}
+
+.MuiTab-root {
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: none;
+  color: #555;
+}
+
+.MuiTab-root.Mui-selected {
+  color: #1976d2;
+}

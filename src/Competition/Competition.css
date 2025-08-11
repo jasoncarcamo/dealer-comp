@@ -1,0 +1,16 @@
+.competition-container {
+  padding: 1rem;
+}
+
+.add-sales-button {
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-transform: none;
+  background-color: #1976d2;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.add-sales-button:hover {
+  background-color: #115293;
+}

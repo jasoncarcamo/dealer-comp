@@ -1,0 +1,15 @@
+.history-container {
+  padding: 1rem;
+}
+
+.history-title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.history-placeholder {
+  color: #777;
+  font-style: italic;
+  font-size: 1rem;
+}

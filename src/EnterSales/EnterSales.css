@@ -1,0 +1,19 @@
+.enter-sales-container {
+  padding: 1rem;
+}
+
+.save-button {
+  background-color: #1976d2;
+  border: none;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.save-button:hover {
+  background-color: #115293;
+}
