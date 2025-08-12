@@ -1,22 +1,32 @@
-import React, { Component } from 'react';
-import { Tabs, Tab } from '@mui/material';
+import React from 'react';
+import { Tabs, Tab, useMediaQuery, useTheme, Box } from '@mui/material';
 
-class TabsMenu extends Component {
-  render() {
-    return (
+export default function TabsMenu({ value, onChange }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return (
+    <Box
+      sx={{
+        bgcolor: 'background.paper',
+        maxWidth: '100%',
+        overflowX: 'auto',
+      }}
+    >
       <Tabs
-        value={this.props.value}
-        onChange={this.props.onChange}
         centered
-        textColor="primary"
-        indicatorColor="primary"
+        value={value}
+        onChange={onChange}
+        variant={isMobile ? 'scrollable' : 'standard'}
+        scrollButtons={isMobile ? 'auto' : false}
+        allowScrollButtonsMobile
+        aria-label="Navigation tabs"
         sx={{
-        ".Mui-selected": {
-        color: `#EB0A1E`,
-        },
-        ".MuiTabs-centered": {
-            borderBottomColor: "#EB0A1E"
-        }
+          minWidth: '320px',
+          '& .MuiTab-root': {
+            fontSize: isMobile ? '0.75rem' : '1rem',
+            minWidth: isMobile ? 100 : 120,
+          },
         }}
       >
         <Tab label="Manage Teams" />
@@ -24,8 +34,6 @@ class TabsMenu extends Component {
         <Tab label="Competition" />
         <Tab label="History" />
       </Tabs>
-    );
-  }
+    </Box>
+  );
 }
-
-export default TabsMenu;

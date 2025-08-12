@@ -7,18 +7,63 @@ import CompetitionAndCharts from './CompetitionAndCharts/CompetitionAndCharts';
 import History from './History/History';
 import { Container, Paper } from '@mui/material';
 
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
+
+// Helper component to bridge hooks with class component
+function TabsRouterWrapper({ onTabChange }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Map path to tab index
+  const pathToIndex = {
+    '/manage-teams': 0,
+    '/enter-sales': 1,
+    '/competition': 2,
+    '/history': 3,
+  };
+
+  // Map tab index to path
+  const indexToPath = {
+    0: '/manage-teams',
+    1: '/enter-sales',
+    2: '/competition',
+    3: '/history',
+  };
+
+  // When URL changes, notify parent to update tabValue state
+  React.useEffect(() => {
+    const tabIndex = pathToIndex[location.pathname] ?? 0;
+    onTabChange(tabIndex);
+  }, [location.pathname, onTabChange]);
+
+  // Handler to change route when tab changes
+  const handleTabChange = (e, newValue) => {
+    const newPath = indexToPath[newValue] || '/manage-teams';
+    navigate(newPath);
+  };
+
+  return <TabsMenu value={pathToIndex[location.pathname] ?? 0} onChange={handleTabChange} />;
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      tabValue: 0,
+      tabValue: 0, // controlled via URL now
       teams: JSON.parse(localStorage.getItem('teams')) || [],
       people: JSON.parse(localStorage.getItem('people')) || [],
       salesData: JSON.parse(localStorage.getItem('salesData')) || [],
     };
   }
 
-  handleTabChange = (e, newValue) => {
+  handleTabChange = (newValue) => {
     this.setState({ tabValue: newValue });
   };
 
@@ -78,7 +123,6 @@ class App extends Component {
           ...team,
           members: team.members.filter((m) => m !== removedPerson.name),
         }));
-        // Note: salesData untouched here to preserve sales history
         return { people, teams };
       },
       () => {
@@ -95,54 +139,75 @@ class App extends Component {
   };
 
   updateTeamNameAndColor = (teamId, newName, newColor) => {
-  this.setState((prev) => ({
-    teams: prev.teams.map((t) =>
-      t.id === teamId ? { ...t, name: newName, color: newColor } : t
-    ),
-  }));
-};
+    this.setState((prev) => ({
+      teams: prev.teams.map((t) =>
+        t.id === teamId ? { ...t, name: newName, color: newColor } : t
+      ),
+    }));
+  };
 
   render() {
-    
     return (
-      <div>
-        <NavBar />
-        <TabsMenu value={this.state.tabValue} onChange={this.handleTabChange} />
-        <Container sx={{ marginTop: 4, marginBottom: 4 }}>
-          <Paper sx={{ padding: 3 }}>
-            {this.state.tabValue === 0 && (
-              <ManageTeamsAndPeople
-                teams={this.state.teams}
-                people={this.state.people}
-                salesData={this.state.salesData}
-                addTeam={this.addTeam}
-                removeTeam={this.removeTeam}
-                updateTeam={this.updateTeam}
-                addPerson={this.addPerson}
-                removePerson={this.removePerson}
-                updateTeamMembers={this.updateTeamMembers}
-                updateTeamNameAndColor={this.updateTeamNameAndColor}
-              />
-            )}
-            {this.state.tabValue === 1 && (
-              <EnterSales
-                people={this.state.people}
-                salesData={this.state.salesData}
-                updateSalesData={this.updateSalesData}
-              />
-            )}
-            {this.state.tabValue === 2 && (
-              <CompetitionAndCharts
-                salesData={this.state.salesData}
-                teams={this.state.teams}
-              />
-            )}
-            {this.state.tabValue === 3 && (
-              <History salesData={this.state.salesData} teams={this.state.teams} people={this.state.people}/>
-            )}
-          </Paper>
-        </Container>
-      </div>
+      <Router>
+        <div>
+          <NavBar />
+          <TabsRouterWrapper onTabChange={this.handleTabChange} />
+          <Container sx={{ marginTop: 4, marginBottom: 4 }}>
+            <Paper sx={{ padding: 3 }}>
+              <Routes>
+                <Route
+                  path="/manage-teams"
+                  element={
+                    <ManageTeamsAndPeople
+                      teams={this.state.teams}
+                      people={this.state.people}
+                      salesData={this.state.salesData}
+                      addTeam={this.addTeam}
+                      removeTeam={this.removeTeam}
+                      updateTeam={this.updateTeam}
+                      addPerson={this.addPerson}
+                      removePerson={this.removePerson}
+                      updateTeamMembers={this.updateTeamMembers}
+                      updateTeamNameAndColor={this.updateTeamNameAndColor}
+                    />
+                  }
+                />
+                <Route
+                  path="/enter-sales"
+                  element={
+                    <EnterSales
+                      people={this.state.people}
+                      salesData={this.state.salesData}
+                      updateSalesData={this.updateSalesData}
+                    />
+                  }
+                />
+                <Route
+                  path="/competition"
+                  element={
+                    <CompetitionAndCharts
+                      salesData={this.state.salesData}
+                      teams={this.state.teams}
+                    />
+                  }
+                />
+                <Route
+                  path="/history"
+                  element={
+                    <History
+                      salesData={this.state.salesData}
+                      teams={this.state.teams}
+                      people={this.state.people}
+                    />
+                  }
+                />
+                {/* Default redirect */}
+                <Route path="*" element={<Navigate to="/manage-teams" replace />} />
+              </Routes>
+            </Paper>
+          </Container>
+        </div>
+      </Router>
     );
   }
 }
