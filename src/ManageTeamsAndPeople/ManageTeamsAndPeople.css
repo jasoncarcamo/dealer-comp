@@ -1,3 +1,21 @@
-input[type="text"]:focus {
-  border-color: #EB0A1E !important; /* Changes the border color */
+.MuiPaper-root{
+    padding: 0 !important;
+}
+
+.css-1kj2szu-MuiContainer-root{
+    padding: 0 !important;
+}
+
+.MuiPaper-elevation{
+    padding: 1em !important;
+}
+
+.css-1pqldws{
+    max-width: 100% !important;
+}
+
+@media screen and (max-width: 410px) {
+    .css-1pqldws{
+        padding: 1em .25em 1em .1em !important;
+    }
 }

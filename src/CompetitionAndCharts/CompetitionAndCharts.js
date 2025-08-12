@@ -13,6 +13,7 @@ import {
   LineChart,
   Line,
 } from 'recharts';
+import "./CompetitionAndCharts.css";
 
 class CompetitionAndCharts extends Component {
   filterSalesDataForCurrentMonth() {
@@ -203,7 +204,7 @@ class CompetitionAndCharts extends Component {
           <BarChart
             data={barData}
             margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-            barCategoryGap="30%"
+            barCategoryGap="25%"
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="team" tick={{ textAnchor: 'middle' }} />

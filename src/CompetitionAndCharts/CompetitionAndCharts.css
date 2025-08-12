@@ -6,3 +6,11 @@
   padding: 1rem;
   margin-top: 1rem;
 }
+
+.MuiBox-root{
+    padding: 0 !important;
+}
+
+.MuiPaper-elevation{
+    padding: 0 .5em !important;
+}

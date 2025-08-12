@@ -10,22 +10,23 @@ export default function TabsMenu({ value, onChange }) {
       sx={{
         bgcolor: 'background.paper',
         maxWidth: '100%',
-        overflowX: 'auto',
+        overflowX: 'none'
       }}
     >
       <Tabs
         centered
         value={value}
         onChange={onChange}
-        variant={isMobile ? 'scrollable' : 'standard'}
-        scrollButtons={isMobile ? 'auto' : false}
-        allowScrollButtonsMobile
+        variant={isMobile ? 'standard' : 'standard'}
+        scrollButtons={isMobile ? false : false}
+        orientation={isMobile ? 'vertical' : 'horizontal'}
         aria-label="Navigation tabs"
         sx={{
-          minWidth: '320px',
+          minWidth: '100%',
           '& .MuiTab-root': {
             fontSize: isMobile ? '0.75rem' : '1rem',
             minWidth: isMobile ? 100 : 120,
+            margin: "auto"
           },
         }}
       >
