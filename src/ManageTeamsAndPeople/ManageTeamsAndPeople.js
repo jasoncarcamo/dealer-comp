@@ -191,7 +191,7 @@ class ManageTeamsAndPeople extends Component {
       userSelect: 'none',
       padding: 1.5,
       marginBottom: 0,
-      background: isDragging ? '#EB0A1E' : '#f36c78',
+      background: isDragging ? '#EB0A1E' : '#fde7e9',
       borderRadius: 6,
       fontSize: '1.1rem',
       textAlign: 'center',
@@ -310,7 +310,7 @@ class ManageTeamsAndPeople extends Component {
                 type="color"
                 value={addTeamColorInput}
                 onChange={(e) => this.setState({ addTeamColorInput: e.target.value })}
-                style={{ width: 60, height: 40, border: 'none', cursor: 'pointer' }}
+                style={{ width: "32px", height: "32px", border: 'none', cursor: 'pointer' }}
                 aria-label="Choose team color"
               />
               <Button variant="contained" color="primary" type="submit" sx={{ backgroundColor: '#EB0A1E'}}>
@@ -434,8 +434,8 @@ class ManageTeamsAndPeople extends Component {
               <Box
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))',
-                  gap: 3,
+                  gridTemplateColumns: 'repeat(2, minmax(270px, 1fr))',
+                  gap: 2,
                   width: '100%',
                   boxSizing: 'border-box',
                 }}
@@ -492,11 +492,11 @@ class ManageTeamsAndPeople extends Component {
                                   this.setState({ editingTeamColor: e.target.value })
                                 }
                                 style={{
-                                  width: 40,
-                                  height: 32,
+                                  width: "32px",
+                                  height: "32px",
                                   border: 'none',
                                   cursor: 'pointer',
-                                  marginLeft: 8,
+                                  marginLeft: 0,
                                   borderRadius: 4,
                                 }}
                                 aria-label={`Edit color for ${team.name}`}

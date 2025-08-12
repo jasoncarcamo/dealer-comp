@@ -1,45 +1,40 @@
 import React, { Component } from 'react';
 import { Typography, Box, Paper } from '@mui/material';
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
+  Cell,
   CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
   Legend,
   ResponsiveContainer,
+  LineChart,
+  Line,
 } from 'recharts';
 
 class CompetitionAndCharts extends Component {
-  // Aggregate sales data per day per team (existing)
-  aggregateSalesByTeam() {
-    const { salesData, teams } = this.props;
+  filterSalesDataForCurrentMonth() {
+    const { salesData } = this.props;
+    if (!Array.isArray(salesData) || salesData.length === 0) return [];
 
-    const result = [];
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
 
-    salesData.forEach((dayEntry) => {
-      const day = { date: dayEntry.date };
-      teams.forEach((team) => {
-        let total = 0;
-        if (team.members && team.members.length) {
-          team.members.forEach((member) => {
-            total += dayEntry[member] || 0;
-          });
-        }
-        day[team.name] = total;
-      });
-      result.push(day);
+    return salesData.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      return (
+        entryDate.getFullYear() === currentYear &&
+        entryDate.getMonth() === currentMonth
+      );
     });
-
-    result.sort((a, b) => (a.date > b.date ? 1 : -1));
-
-    return result;
   }
 
-  // Calculate total sales per salesperson across all dates
   getSalespersonTotals() {
-    const { salesData, teams } = this.props;
+    const { teams } = this.props;
+    const filteredData = this.filterSalesDataForCurrentMonth();
     const totals = {};
 
     const allMembers = new Set();
@@ -51,7 +46,7 @@ class CompetitionAndCharts extends Component {
       totals[member] = 0;
     });
 
-    salesData.forEach((dayEntry) => {
+    filteredData.forEach((dayEntry) => {
       allMembers.forEach((member) => {
         totals[member] += dayEntry[member] || 0;
       });
@@ -60,7 +55,6 @@ class CompetitionAndCharts extends Component {
     return totals;
   }
 
-  // Calculate total sales per team by summing members' totals
   getTeamTotals(salespersonTotals) {
     const { teams } = this.props;
     const teamTotals = {};
@@ -78,12 +72,11 @@ class CompetitionAndCharts extends Component {
     return teamTotals;
   }
 
-  // Aggregate daily sales per salesperson for a given team
   aggregateSalesBySalesperson(team) {
-    const { salesData } = this.props;
+    const filteredData = this.filterSalesDataForCurrentMonth();
     const result = [];
 
-    salesData.forEach((dayEntry) => {
+    filteredData.forEach((dayEntry) => {
       const day = { date: dayEntry.date };
       if (team.members && team.members.length) {
         team.members.forEach((member) => {
@@ -97,7 +90,6 @@ class CompetitionAndCharts extends Component {
     return result;
   }
 
-  // Generate distinct colors for salespeople lines per team (fallback)
   generateColors(count) {
     const baseColors = [
       '#8884d8',
@@ -112,24 +104,71 @@ class CompetitionAndCharts extends Component {
     return Array.from({ length: count }, (_, i) => baseColors[i % baseColors.length]);
   }
 
+  // Custom tooltip for the bar chart that shows team members
+  CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length && this.props.teams.length) {
+      const teamName = label;
+      const team = this.props.teams.find((t) => t.name === teamName);
+      const totalSales = payload[0].value;
+
+      return (
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 1,
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            maxWidth: 250,
+          }}
+        >
+          <Typography variant="subtitle1" fontWeight="bold">
+            Team: {teamName}
+          </Typography>
+          <Typography variant="body2">Total Sales: {totalSales}</Typography>
+          <Typography variant="body2" mt={1} fontWeight="bold">
+            Members:
+          </Typography>
+          {team && team.members && team.members.length ? (
+            team.members.map((member) => (
+              <Typography key={member} variant="body2">
+                {member}
+              </Typography>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No members
+            </Typography>
+          )}
+        </Paper>
+      );
+    }
+
+    return null;
+  };
+
   render() {
     const { teams } = this.props;
-    const data = this.aggregateSalesByTeam();
+    const salespersonTotals = this.getSalespersonTotals();
+    const teamTotals = this.getTeamTotals(salespersonTotals);
 
     if (!teams.length) {
       return <Typography>No teams available. Please add teams first.</Typography>;
     }
-    if (!data.length) {
-      return <Typography>No sales data available.</Typography>;
+
+    if (teams.length === 0 || Object.keys(teamTotals).length === 0) {
+      return <Typography>No sales data available for the current month.</Typography>;
     }
 
-    const salespersonTotals = this.getSalespersonTotals();
-    const teamTotals = this.getTeamTotals(salespersonTotals);
+    const barData = teams.map((team) => ({
+      team: team.name,
+      totalSales: teamTotals[team.name] || 0,
+      color: team.color || '#8884d8',
+    }));
 
     return (
-      <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 1 }}>
+      <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 2 }}>
         <Typography variant="h5" gutterBottom>
-          Team Sales Over Time
+          Team Sales Over Time (Current Month)
         </Typography>
 
         {/* Totals summary */}
@@ -159,30 +198,30 @@ class CompetitionAndCharts extends Component {
           ))}
         </Box>
 
-        {/* Main team sales line chart */}
+        {/* Bar chart for current month total sales per team */}
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+          <BarChart
+            data={barData}
+            margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+            barCategoryGap="30%"
+          >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
+            <XAxis dataKey="team" tick={{ textAnchor: 'middle' }} />
             <YAxis allowDecimals={false} />
-            <Tooltip />
+            <Tooltip content={<this.CustomTooltip />} />
             <Legend />
-            {teams.map((team) => (
-              <Line
-                key={team.name}
-                type="monotone"
-                dataKey={team.name}
-                stroke={team.color}
-                activeDot={{ r: 8 }}
-              />
-            ))}
-          </LineChart>
+            <Bar dataKey="totalSales" name="Total Sales">
+              {barData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
 
         {/* Sub line charts per team showing salesperson daily sales */}
         <Box sx={{ mt: 6 }}>
           <Typography variant="h5" gutterBottom>
-            Salesperson Daily Sales by Team
+            Salesperson Daily Sales by Team (Current Month)
           </Typography>
           {teams.map((team) => {
             if (!team.members || team.members.length === 0) {
