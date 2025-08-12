@@ -127,7 +127,7 @@ class CompetitionAndCharts extends Component {
     const teamTotals = this.getTeamTotals(salespersonTotals);
 
     return (
-      <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 3 }}>
+      <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 1 }}>
         <Typography variant="h5" gutterBottom>
           Team Sales Over Time
         </Typography>
