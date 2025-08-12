@@ -226,7 +226,7 @@ class History extends Component {
                   {(!dragListOrder || dragListOrder.length === 0) && (
                     <Typography sx={{ p: 2 }}>No salespeople found.</Typography>
                   )}
-                  
+
                   {dragListOrder &&
                     dragListOrder.map((personName, index) => (
                       <Draggable key={personName} draggableId={personName} index={index}>
@@ -239,7 +239,7 @@ class History extends Component {
                               userSelect: 'none',
                               p: 1.5,
                               m: 1,
-                              bgcolor: snapshot.isDragging ? '#90caf9' : '#f0f0f0',
+                              bgcolor: snapshot.isDragging ? '#EB0A1E' : '#f0f0f0',
                               borderRadius: 1,
                               display: 'flex',
                               justifyContent: 'space-between',

@@ -17,7 +17,7 @@ class ManageTeamsAndPeople extends Component {
       newPersonName: '',
       editingTeamIndex: null,
       editingTeamName: '',
-      editingTeamColor: '#1976d2', // added for editing color
+      editingTeamColor: '#1976d2',
       addingTeam: false,
       addingPerson: false,
       addTeamNameInput: '',
@@ -118,7 +118,7 @@ class ManageTeamsAndPeople extends Component {
       (p) => p.name.toLowerCase() === name.toLowerCase()
     );
     if (exists) return alert('Person already exists.');
-    this.props.addPerson({ name });
+    this.props.addPerson({ name, carsSold: 0 });
     this.setState({ addingPerson: false, addPersonNameInput: '' });
   };
 
@@ -190,7 +190,7 @@ class ManageTeamsAndPeople extends Component {
       userSelect: 'none',
       padding: 1.5,
       marginBottom: 0,
-      background: isDragging ? '#90caf9' : '#e3f2fd',
+      background: isDragging ? '#EB0A1E' : '#f36c78',
       borderRadius: 6,
       fontSize: '1.1rem',
       textAlign: 'center',
@@ -207,7 +207,7 @@ class ManageTeamsAndPeople extends Component {
       minHeight: 50,
       maxHeight: 400,
       borderRadius: 6,
-      border: '1px solid #90caf9',
+      border: '1px solid #EB0A1E',
       display: 'grid',
       gridTemplateColumns: 'repeat(3, 1fr)',
       gap: 2.5,
@@ -233,6 +233,23 @@ class ManageTeamsAndPeople extends Component {
       overflowX: 'hidden',
     });
 
+    // Helper to get cars sold by a person from people prop
+    const getCarsSold = (personName) => {
+        const salesData = this.props.salesData;
+        const people = this.props.people;
+        let sellsCount = 0;
+       
+        for( let sell of salesData){
+            for (const [key, value] of Object.entries(sell)) {
+                if(personName === key && value > 0){
+                    sellsCount = value;
+                };
+            };
+        };
+
+        return sellsCount;
+    };
+
     return (
       <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3, fontSize: '1.25rem' }}>
         <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 'bold' }}>
@@ -245,7 +262,7 @@ class ManageTeamsAndPeople extends Component {
             <Button
               variant="contained"
               onClick={this.startAddingTeam}
-              sx={{ padding: '14px 24px' }}
+              sx={{ padding: '14px 24px', backgroundColor: '#EB0A1E'}}
             >
               Add New Team
             </Button>
@@ -288,7 +305,7 @@ class ManageTeamsAndPeople extends Component {
             <Button
               variant="contained"
               onClick={this.startAddingPerson}
-              sx={{ padding: '14px 24px' }}
+              sx={{ padding: '14px 24px', backgroundColor: '#EB0A1E'}}
             >
               Add New Salesperson
             </Button>
@@ -346,9 +363,9 @@ class ManageTeamsAndPeople extends Component {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             sx={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                            aria-label={`Salesperson ${person.name}`}
+                            aria-label={`Salesperson ${person.name}, sold ${person.carsSold || 0} cars`}
                           >
-                            <span>{person.name}</span>
+                            <span>{person.name} ({person.carsSold || 0} cars sold)</span>
                             <Button
                               size="small"
                               color="error"
@@ -503,9 +520,9 @@ class ManageTeamsAndPeople extends Component {
                                     snapshot.isDragging,
                                     provided.draggableProps.style
                                   )}
-                                  aria-label={`${memberName} in team ${team.name}`}
+                                  aria-label={`${memberName} in team ${team.name}, sold ${getCarsSold(memberName)} cars`}
                                 >
-                                  {memberName}
+                                  {memberName} ({getCarsSold(memberName)} cars sold)
                                 </Box>
                               )}
                             </Draggable>

@@ -10,6 +10,14 @@ class TabsMenu extends Component {
         centered
         textColor="primary"
         indicatorColor="primary"
+        sx={{
+        ".Mui-selected": {
+        color: `#EB0A1E`,
+        },
+        ".MuiTabs-centered": {
+            borderBottomColor: "#EB0A1E"
+        }
+        }}
       >
         <Tab label="Manage Teams" />
         <Tab label="Enter Sales" />

@@ -103,6 +103,7 @@ class App extends Component {
 };
 
   render() {
+    
     return (
       <div>
         <NavBar />
@@ -113,6 +114,7 @@ class App extends Component {
               <ManageTeamsAndPeople
                 teams={this.state.teams}
                 people={this.state.people}
+                salesData={this.state.salesData}
                 addTeam={this.addTeam}
                 removeTeam={this.removeTeam}
                 updateTeam={this.updateTeam}
