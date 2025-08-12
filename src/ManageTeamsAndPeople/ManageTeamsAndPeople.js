@@ -7,6 +7,7 @@ import {
   Box,
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import "./ManageTeamsAndPeople.css"
 
 class ManageTeamsAndPeople extends Component {
   constructor(props) {
@@ -239,9 +240,6 @@ class ManageTeamsAndPeople extends Component {
         const salesData = this.props.salesData;
         const people = this.props.people;
         let sellsCount = 0;
-
-        console.log(salesData)
-       
         for( let sell of salesData){
             for (const [key, value] of Object.entries(sell)) {
                 if(personName === key && value > 0){
@@ -285,13 +283,30 @@ class ManageTeamsAndPeople extends Component {
               style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 1 }}
             >
               <TextField
-                label="Team Name"
+                label="Team name"
                 size="medium"
                 value={addTeamNameInput}
                 onChange={(e) => this.setState({ addTeamNameInput: e.target.value })}
-                sx={{ flex: 1 }}
                 autoFocus
-              />
+                sx={{
+                    flex: 1,
+                    // Label color when unfocused
+                    '& .MuiInputLabel-root': {
+                    color: 'gray',
+                    },
+                    // Label color when focused
+                    '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#EB0A1E !important',
+                    },
+                    // Border color when focused
+                    '& .MuiOutlinedInput-root': {
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#EB0A1E',
+                    },
+                    },
+                }}
+                />
+
               <input
                 type="color"
                 value={addTeamColorInput}
@@ -299,7 +314,7 @@ class ManageTeamsAndPeople extends Component {
                 style={{ width: 60, height: 40, border: 'none', cursor: 'pointer' }}
                 aria-label="Choose team color"
               />
-              <Button variant="contained" color="primary" type="submit">
+              <Button variant="contained" color="primary" type="submit" sx={{ backgroundColor: '#EB0A1E'}}>
                 Save
               </Button>
               <Button variant="outlined" onClick={this.cancelAddingTeam} type="button">
@@ -332,10 +347,25 @@ class ManageTeamsAndPeople extends Component {
                 size="medium"
                 value={addPersonNameInput}
                 onChange={(e) => this.setState({ addPersonNameInput: e.target.value })}
-                sx={{ flex: 1 }}
                 autoFocus
-              />
-              <Button variant="contained" color="primary" type="submit">
+                sx={{
+                    flex: 1,
+                    '& .MuiInputLabel-root': {
+                    color: 'gray', // label color when not focused
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#EB0A1E !important', // label color when focused
+                    },
+                    '& .MuiOutlinedInput-root': {
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#EB0A1E', // border color when focused
+                    },
+                    },
+                }}
+                variant="outlined" // make sure variant is outlined
+                />
+
+              <Button variant="contained" color="primary" type="submit" sx={{ backgroundColor: '#EB0A1E'}}>
                 Save
               </Button>
               <Button variant="outlined" onClick={this.cancelAddingPerson} type="button">
