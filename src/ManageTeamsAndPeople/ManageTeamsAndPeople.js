@@ -133,14 +133,13 @@ class ManageTeamsAndPeople extends Component {
   };
 
   handleRemovePerson = (personName) => {
-    // Find the index of the person in the people array passed as props
     const personIndex = this.props.people.findIndex(p => p.name === personName);
-    if (personIndex === -1) return; // Person not found, do nothing
+    if (personIndex === -1) return;
 
     if (window.confirm(`Are you sure you want to remove salesperson "${personName}"?`)) {
-        this.props.removePerson(personIndex);
+      this.props.removePerson(personIndex);
     }
-    };
+  };
 
   startEditingTeam = (index, currentName) => {
     this.setState({ editingTeamIndex: index, editingTeamName: currentName });
@@ -245,13 +244,21 @@ class ManageTeamsAndPeople extends Component {
         {/* Add Team section */}
         <Box sx={{ display: 'flex', gap: 2, mb: 4, alignItems: 'center' }}>
           {!addingTeam ? (
-            <>
-              <Button variant="contained" onClick={this.startAddingTeam} sx={{ padding: '14px 24px' }}>
-                Add New Team
-              </Button>
-            </>
+            <Button
+              variant="contained"
+              onClick={this.startAddingTeam}
+              sx={{ padding: '14px 24px' }}
+            >
+              Add New Team
+            </Button>
           ) : (
-            <>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                this.saveAddingTeam();
+              }}
+              style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 1 }}
+            >
               <TextField
                 label="Team Name"
                 size="medium"
@@ -267,24 +274,34 @@ class ManageTeamsAndPeople extends Component {
                 style={{ width: 60, height: 40, border: 'none', cursor: 'pointer' }}
                 aria-label="Choose team color"
               />
-              <Button variant="contained" color="primary" onClick={this.saveAddingTeam}>
+              <Button variant="contained" color="primary" type="submit">
                 Save
               </Button>
-              <Button variant="outlined" onClick={this.cancelAddingTeam}>
+              <Button variant="outlined" onClick={this.cancelAddingTeam} type="button">
                 Cancel
               </Button>
-            </>
+            </form>
           )}
         </Box>
 
         {/* Add Person section */}
         <Box sx={{ display: 'flex', gap: 2, mb: 6, alignItems: 'center' }}>
           {!addingPerson ? (
-            <Button variant="contained" onClick={this.startAddingPerson} sx={{ padding: '14px 24px' }}>
+            <Button
+              variant="contained"
+              onClick={this.startAddingPerson}
+              sx={{ padding: '14px 24px' }}
+            >
               Add New Salesperson
             </Button>
           ) : (
-            <>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                this.saveAddingPerson();
+              }}
+              style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 1 }}
+            >
               <TextField
                 label="Salesperson Name"
                 size="medium"
@@ -293,13 +310,13 @@ class ManageTeamsAndPeople extends Component {
                 sx={{ flex: 1 }}
                 autoFocus
               />
-              <Button variant="contained" color="primary" onClick={this.saveAddingPerson}>
+              <Button variant="contained" color="primary" type="submit">
                 Save
               </Button>
-              <Button variant="outlined" onClick={this.cancelAddingPerson}>
+              <Button variant="outlined" onClick={this.cancelAddingPerson} type="button">
                 Cancel
               </Button>
-            </>
+            </form>
           )}
         </Box>
 
