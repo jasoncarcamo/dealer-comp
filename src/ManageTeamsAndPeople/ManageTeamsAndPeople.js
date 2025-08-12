@@ -166,6 +166,7 @@ class ManageTeamsAndPeople extends Component {
   };
 
   render() {
+    console.log(this.props)
     const { teams, people } = this.props;
     const {
       editingTeamIndex,
@@ -238,12 +239,21 @@ class ManageTeamsAndPeople extends Component {
         const salesData = this.props.salesData;
         const people = this.props.people;
         let sellsCount = 0;
+
+        console.log(salesData)
        
         for( let sell of salesData){
             for (const [key, value] of Object.entries(sell)) {
                 if(personName === key && value > 0){
-                    sellsCount = value;
-                };
+                    const date = new Date();
+                    const currentMonth = date.getMonth();
+                    const sellDate = new Date(sell.date);
+
+                    if(sellDate.getMonth() === currentMonth){
+                        sellsCount = value;
+                    };
+                    return sellsCount;
+                }
             };
         };
 
