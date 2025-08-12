@@ -17,6 +17,7 @@ class ManageTeamsAndPeople extends Component {
       newPersonName: '',
       editingTeamIndex: null,
       editingTeamName: '',
+      editingTeamColor: '#1976d2', // added for editing color
       addingTeam: false,
       addingPerson: false,
       addTeamNameInput: '',
@@ -79,8 +80,6 @@ class ManageTeamsAndPeople extends Component {
     }
   };
 
-  // --- Adding new team with Save/Cancel ---
-
   startAddingTeam = () => {
     this.setState({
       addingTeam: true,
@@ -103,8 +102,6 @@ class ManageTeamsAndPeople extends Component {
     this.props.addTeam({ name, color: this.state.addTeamColorInput, members: [] });
     this.setState({ addingTeam: false, addTeamNameInput: '', addTeamColorInput: '#1976d2' });
   };
-
-  // --- Adding new person with Save/Cancel ---
 
   startAddingPerson = () => {
     this.setState({ addingPerson: true, addPersonNameInput: '' });
@@ -141,16 +138,16 @@ class ManageTeamsAndPeople extends Component {
     }
   };
 
-  startEditingTeam = (index, currentName) => {
-    this.setState({ editingTeamIndex: index, editingTeamName: currentName });
+  startEditingTeam = (index, currentName, currentColor) => {
+    this.setState({ editingTeamIndex: index, editingTeamName: currentName, editingTeamColor: currentColor });
   };
 
   cancelEditingTeam = () => {
-    this.setState({ editingTeamIndex: null, editingTeamName: '' });
+    this.setState({ editingTeamIndex: null, editingTeamName: '', editingTeamColor: '#1976d2' });
   };
 
   saveEditingTeam = () => {
-    const { editingTeamIndex, editingTeamName } = this.state;
+    const { editingTeamIndex, editingTeamName, editingTeamColor } = this.state;
     if (!editingTeamName.trim()) {
       alert('Team name cannot be empty.');
       return;
@@ -164,8 +161,8 @@ class ManageTeamsAndPeople extends Component {
       alert('Another team with this name already exists.');
       return;
     }
-    this.props.updateTeam(editingTeamIndex, { name: editingTeamName.trim() });
-    this.setState({ editingTeamIndex: null, editingTeamName: '' });
+    this.props.updateTeam(editingTeamIndex, { name: editingTeamName.trim(), color: editingTeamColor });
+    this.setState({ editingTeamIndex: null, editingTeamName: '', editingTeamColor: '#1976d2' });
   };
 
   render() {
@@ -173,6 +170,7 @@ class ManageTeamsAndPeople extends Component {
     const {
       editingTeamIndex,
       editingTeamName,
+      editingTeamColor,
       addingTeam,
       addTeamNameInput,
       addTeamColorInput,
@@ -206,13 +204,13 @@ class ManageTeamsAndPeople extends Component {
     const getListStyle = (isDraggingOver) => ({
       background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
       padding: 6,
-      minHeight: 100,
-      maxHeight: 350,
+      minHeight: 50,
+      maxHeight: 400,
       borderRadius: 6,
       border: '1px solid #90caf9',
       display: 'grid',
       gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: grid,
+      gap: 2.5,
       overflowY: 'auto',
       overflowX: 'hidden',
       scrollbarWidth: 'thin',
@@ -221,7 +219,7 @@ class ManageTeamsAndPeople extends Component {
 
     const getTeamListStyle = (isDraggingOver) => ({
       background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
-      padding: grid,
+      padding: 2,
       height: 400,
       borderRadius: 6,
       border: '1px solid',
@@ -428,15 +426,32 @@ class ManageTeamsAndPeople extends Component {
                                 onChange={(e) =>
                                   this.setState({ editingTeamName: e.target.value })
                                 }
-                                sx={{ flex: 1 }}
+                                sx={{ flexGrow: 1, minWidth: 120 }}
                                 aria-label={`Edit team name for ${team.name}`}
+                              />
+                              <input
+                                type="color"
+                                value={editingTeamColor}
+                                onChange={(e) =>
+                                  this.setState({ editingTeamColor: e.target.value })
+                                }
+                                style={{
+                                  width: 40,
+                                  height: 32,
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  marginLeft: 8,
+                                  borderRadius: 4,
+                                }}
+                                aria-label={`Edit color for ${team.name}`}
                               />
                               <Button
                                 size="small"
                                 variant="contained"
                                 color="primary"
                                 onClick={this.saveEditingTeam}
-                                aria-label="Save team name"
+                                aria-label="Save team name and color"
+                                sx={{ ml: 1 }}
                               >
                                 Save
                               </Button>
@@ -445,7 +460,8 @@ class ManageTeamsAndPeople extends Component {
                                 variant="outlined"
                                 color="inherit"
                                 onClick={this.cancelEditingTeam}
-                                aria-label="Cancel editing team name"
+                                aria-label="Cancel editing team"
+                                sx={{ ml: 1 }}
                               >
                                 Cancel
                               </Button>
@@ -454,8 +470,8 @@ class ManageTeamsAndPeople extends Component {
                             <>
                               <span
                                 style={{ flex: 1, cursor: 'pointer' }}
-                                onClick={() => this.startEditingTeam(index, team.name)}
-                                title="Click to edit team name"
+                                onClick={() => this.startEditingTeam(index, team.name, team.color)}
+                                title="Click to edit team name and color"
                               >
                                 {team.name}
                               </span>
