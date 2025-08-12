@@ -167,7 +167,6 @@ class ManageTeamsAndPeople extends Component {
   };
 
   render() {
-    console.log(this.props)
     const { teams, people } = this.props;
     const {
       editingTeamIndex,

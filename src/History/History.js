@@ -12,6 +12,7 @@ import {
   Box,
   ToggleButton,
   ToggleButtonGroup,
+  Button,
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
@@ -135,22 +136,122 @@ class History extends Component {
       .sort((a, b) => (a.month > b.month ? 1 : -1));
   }
 
-  renderTeamName = (personName)=>{
-        const teams = this.props.teams;
-        let teamName;
+  renderTeamName = (personName) => {
+    const teams = this.props.teams;
+    let teamName = 'Not in a team';
 
-        for (let team of teams){
-            for(let member of team.members){
-                if(personName === member){
-                    teamName = team.name;
-                } else{
-                    teamName = "Not in a team";
-                }
-            };
-        };
-
-        return ` (${teamName})`;
+    for (let team of teams) {
+      if (team.members.includes(personName)) {
+        teamName = team.name;
+        break;
+      }
     }
+    return ` (${teamName})`;
+  };
+
+  handlePrint = () => {
+    const { teams, salesData } = this.props;
+    const { selectedDate, viewMode } = this.state;
+
+    if (!teams || teams.length === 0) {
+      alert('No teams to print.');
+      return;
+    }
+
+    // Get date range based on viewMode
+    const getDateRange = () => {
+      const dateObj = new Date(selectedDate);
+      let startDate, endDate;
+
+      if (viewMode === 'day') {
+        startDate = new Date(selectedDate);
+        endDate = new Date(selectedDate);
+      } else if (viewMode === 'week') {
+        const day = dateObj.getDay();
+        startDate = new Date(dateObj);
+        startDate.setDate(dateObj.getDate() - day);
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+      } else if (viewMode === 'month') {
+        startDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+        endDate = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
+      }
+      return { startDate, endDate };
+    };
+
+    const { startDate, endDate } = getDateRange();
+
+    // Filter salesData for date range
+    const filteredEntries = salesData.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= startDate && entryDate <= endDate;
+    });
+
+    // Build sales by team and person: { teamName: { personName: totalSales, ... } }
+    const salesByTeam = {};
+    teams.forEach((team) => {
+      salesByTeam[team.name] = {};
+      team.members.forEach((member) => {
+        salesByTeam[team.name][member] = 0;
+      });
+    });
+
+    filteredEntries.forEach((entry) => {
+      teams.forEach((team) => {
+        team.members.forEach((member) => {
+          if (entry[member] !== undefined) {
+            salesByTeam[team.name][member] += entry[member];
+          }
+        });
+      });
+    });
+
+    // Create HTML for print
+    let html = `
+      <html>
+        <head>
+          <title>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h2 { margin-top: 30px; }
+            table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
+            th { background-color: #f0f0f0; color: black; }
+            th:first-child, td:first-child { text-align: left; }
+          </style>
+        </head>
+        <body>
+          <h1>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</h1>
+          <p>Date range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
+    `;
+
+    teams.forEach((team) => {
+      html += `<h2>Team: ${team.name}</h2>`;
+      html += `<table><thead><tr><th>Salesperson</th><th>Sales</th></tr></thead><tbody>`;
+
+      let teamTotal = 0;
+      Object.entries(salesByTeam[team.name]).forEach(([person, sales]) => {
+        html += `<tr><td>${person}</td><td>${sales}</td></tr>`;
+        teamTotal += sales;
+      });
+
+      html += `<tr style="font-weight:bold;"><td>Total</td><td>${teamTotal}</td></tr>`;
+      html += `</tbody></table>`;
+    });
+
+    html += `
+        </body>
+      </html>
+    `;
+
+    // Open print window
+    const printWindow = window.open('', '', 'width=900,height=700');
+    printWindow.document.body.innerHTML = html;
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
 
   render() {
     const { teams, people } = this.props;
@@ -160,17 +261,12 @@ class History extends Component {
       return <Typography>No teams to show history for.</Typography>;
     }
 
-    const monthlyData = this.aggregateByMonth();
-    if (monthlyData.length === 0) {
-      return <Typography>No sales data available.</Typography>;
-    }
-
     const salesForPeriod = this.getSalesForPeriod();
 
     return (
       <Box sx={{ maxWidth: 900, margin: '0 auto', p: 3 }}>
         <Typography variant="h5" gutterBottom>
-          Competition History by Month
+          Competition History
         </Typography>
 
         {/* Date & View Mode Selection */}
@@ -207,6 +303,9 @@ class History extends Component {
               Month
             </ToggleButton>
           </ToggleButtonGroup>
+          <Button variant="contained" onClick={this.handlePrint} sx={{ ml: 2 }}>
+            Print Report
+          </Button>
         </Box>
 
         {/* Draggable Sales List */}
@@ -228,7 +327,7 @@ class History extends Component {
                   {(!dragListOrder || dragListOrder.length === 0) && (
                     <Typography sx={{ p: 2 }}>No salespeople found.</Typography>
                   )}
-                  
+
                   {dragListOrder &&
                     dragListOrder.map((personName, index) => (
                       <Draggable key={personName} draggableId={personName} index={index}>
@@ -283,7 +382,7 @@ class History extends Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {monthlyData.map(({ month, totals }) => (
+              {this.aggregateByMonth().map(({ month, totals }) => (
                 <TableRow key={month}>
                   <TableCell>{month}</TableCell>
                   {teams.map((team) => (
