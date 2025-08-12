@@ -7,12 +7,6 @@ import CompetitionAndCharts from './CompetitionAndCharts/CompetitionAndCharts';
 import History from './History/History';
 import { Container, Paper } from '@mui/material';
 
-const savedTeams = JSON.parse(localStorage.getItem('teams')) || [];
-const teams = savedTeams.map(team => ({
-  ...team,
-  members: Array.isArray(team.members) ? team.members : []
-}));
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -28,7 +22,6 @@ class App extends Component {
     this.setState({ tabValue: newValue });
   };
 
-  // Team handlers
   addTeam = (team) => {
     this.setState(
       (prev) => ({ teams: [...prev.teams, team] }),
@@ -37,15 +30,15 @@ class App extends Component {
   };
 
   removeTeam = (teamIndex) => {
-  this.setState(
-    (prev) => {
-      const newTeams = [...prev.teams];
-      newTeams.splice(teamIndex, 1);
-      return { teams: newTeams };
-    },
-    () => localStorage.setItem('teams', JSON.stringify(this.state.teams))
-  );
-};
+    this.setState(
+      (prev) => {
+        const newTeams = [...prev.teams];
+        newTeams.splice(teamIndex, 1);
+        return { teams: newTeams };
+      },
+      () => localStorage.setItem('teams', JSON.stringify(this.state.teams))
+    );
+  };
 
   updateTeam = (index, updatedTeam) => {
     this.setState(
@@ -69,7 +62,6 @@ class App extends Component {
     );
   };
 
-  // People handlers
   addPerson = (person) => {
     this.setState(
       (prev) => ({ people: [...prev.people, person] }),
@@ -77,15 +69,16 @@ class App extends Component {
     );
   };
 
-  removePerson = (index) => {
+  removePerson = (personIndex) => {
     this.setState(
       (prev) => {
         const people = [...prev.people];
-        const removedPerson = people.splice(index, 1)[0];
+        const removedPerson = people.splice(personIndex, 1)[0];
         const teams = prev.teams.map((team) => ({
           ...team,
           members: team.members.filter((m) => m !== removedPerson.name),
         }));
+        // Note: salesData untouched here to preserve sales history
         return { people, teams };
       },
       () => {
@@ -95,12 +88,19 @@ class App extends Component {
     );
   };
 
-  // Sales handlers
   updateSalesData = (newSalesData) => {
     this.setState({ salesData: newSalesData }, () => {
       localStorage.setItem('salesData', JSON.stringify(this.state.salesData));
     });
   };
+
+  updateTeamNameAndColor = (teamId, newName, newColor) => {
+  this.setState((prev) => ({
+    teams: prev.teams.map((t) =>
+      t.id === teamId ? { ...t, name: newName, color: newColor } : t
+    ),
+  }));
+};
 
   render() {
     return (
@@ -119,6 +119,7 @@ class App extends Component {
                 addPerson={this.addPerson}
                 removePerson={this.removePerson}
                 updateTeamMembers={this.updateTeamMembers}
+                updateTeamNameAndColor={this.updateTeamNameAndColor}
               />
             )}
             {this.state.tabValue === 1 && (
@@ -135,7 +136,7 @@ class App extends Component {
               />
             )}
             {this.state.tabValue === 3 && (
-              <History salesData={this.state.salesData} teams={this.state.teams} />
+              <History salesData={this.state.salesData} teams={this.state.teams} people={this.state.people}/>
             )}
           </Paper>
         </Container>

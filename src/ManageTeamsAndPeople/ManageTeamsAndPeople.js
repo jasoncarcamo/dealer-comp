@@ -133,10 +133,14 @@ class ManageTeamsAndPeople extends Component {
   };
 
   handleRemovePerson = (personName) => {
+    // Find the index of the person in the people array passed as props
+    const personIndex = this.props.people.findIndex(p => p.name === personName);
+    if (personIndex === -1) return; // Person not found, do nothing
+
     if (window.confirm(`Are you sure you want to remove salesperson "${personName}"?`)) {
-      this.props.removePerson(personName);
+        this.props.removePerson(personIndex);
     }
-  };
+    };
 
   startEditingTeam = (index, currentName) => {
     this.setState({ editingTeamIndex: index, editingTeamName: currentName });

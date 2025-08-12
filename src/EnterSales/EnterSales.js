@@ -10,6 +10,10 @@ import {
   TextField,
   Button,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 
 class EnterSales extends Component {
@@ -18,6 +22,8 @@ class EnterSales extends Component {
     this.state = {
       date: this.getTodayDate(),
       salesInputs: {}, // { "personName": number }
+      originalSalesInputs: {},
+      confirmOpen: false,
     };
   }
 
@@ -31,22 +37,12 @@ class EnterSales extends Component {
 
   loadSalesForDate(date) {
     const { salesData, people } = this.props;
-    // Find sales entry for this date, if exists
     const entry = salesData.find((d) => d.date === date);
-    if (entry) {
-      const salesInputs = {};
-      people.forEach((p) => {
-        salesInputs[p.name] = entry[p.name] || 0;
-      });
-      this.setState({ salesInputs });
-    } else {
-      // New date: zero out inputs
-      const salesInputs = {};
-      people.forEach((p) => {
-        salesInputs[p.name] = 0;
-      });
-      this.setState({ salesInputs });
-    }
+    const salesInputs = {};
+    people.forEach((p) => {
+      salesInputs[p.name] = entry ? entry[p.name] || 0 : 0;
+    });
+    this.setState({ salesInputs, originalSalesInputs: salesInputs });
   }
 
   handleDateChange = (e) => {
@@ -62,23 +58,32 @@ class EnterSales extends Component {
     }));
   };
 
-  saveSales = () => {
+  handleSaveClick = () => {
+    this.setState({ confirmOpen: true });
+  };
+
+  handleConfirmSave = () => {
     const { date, salesInputs } = this.state;
     let { salesData } = this.props;
-    // Remove old entry for date if exists
     salesData = salesData.filter((d) => d.date !== date);
-    // Add new entry with sales
     const newEntry = { date, ...salesInputs };
     salesData.push(newEntry);
-    // Sort salesData by date ascending
     salesData.sort((a, b) => (a.date > b.date ? 1 : -1));
     this.props.updateSalesData(salesData);
+    this.setState({ originalSalesInputs: salesInputs, confirmOpen: false });
     alert('Sales saved!');
+  };
+
+  handleCancel = () => {
+    this.setState((prev) => ({
+      salesInputs: { ...prev.originalSalesInputs },
+      confirmOpen: false,
+    }));
   };
 
   render() {
     const { people } = this.props;
-    const { date, salesInputs } = this.state;
+    const { date, salesInputs, confirmOpen } = this.state;
 
     return (
       <div>
@@ -109,8 +114,11 @@ class EnterSales extends Component {
                       type="number"
                       inputProps={{ min: 0 }}
                       value={salesInputs[person.name] || 0}
-                      onChange={(e) => this.handleSalesChange(person.name, e.target.value)}
+                      onChange={(e) =>
+                        this.handleSalesChange(person.name, e.target.value)
+                      }
                       size="small"
+                      aria-label={`Cars sold by ${person.name}`}
                     />
                   </TableCell>
                 </TableRow>
@@ -118,9 +126,34 @@ class EnterSales extends Component {
             </TableBody>
           </Table>
         </TableContainer>
-        <Button variant="contained" onClick={this.saveSales} sx={{ marginTop: 2 }}>
-          Save Sales
+        <Button
+          variant="contained"
+          onClick={this.handleSaveClick}
+          sx={{ marginTop: 2, marginRight: 2, minWidth: 100 }}
+        >
+          Save
         </Button>
+        <Button
+          variant="outlined"
+          onClick={this.handleCancel}
+          sx={{ marginTop: 2, minWidth: 100 }}
+        >
+          Cancel
+        </Button>
+
+        {/* Confirmation Dialog */}
+        <Dialog open={confirmOpen} onClose={() => this.setState({ confirmOpen: false })}>
+          <DialogTitle>Confirm Save</DialogTitle>
+          <DialogContent>
+            Are you sure you want to save the sales data for {date}?
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => this.setState({ confirmOpen: false })}>No</Button>
+            <Button onClick={this.handleConfirmSave} variant="contained" autoFocus>
+              Yes
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
