@@ -1,5 +1,5 @@
 const PeopleStorage = {
-    People(){
+    getPeople(){
         return localStorage.getItem('people');
     },
     setPeople(people){

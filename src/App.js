@@ -60,9 +60,9 @@ class App extends Component {
     super(props);
     this.state = {
       tabValue: 0, // controlled via URL now
-      teams: JSON.parse(localStorage.getItem('teams')) || [],
-      people: JSON.parse(localStorage.getItem('people')) || [],
-      salesData: JSON.parse(localStorage.getItem('salesData')) || [],
+      teams: JSON.parse(TeamStorage.getTeams()) || [],
+      people: JSON.parse(PeopleStorage.getPeople()) || [],
+      salesData: JSON.parse(SalesStorage.getSales()) || [],
     };
   }
 
@@ -80,7 +80,7 @@ class App extends Component {
   addTeam = (team) => {
     this.setState(
       (prev) => ({ teams: [...prev.teams, team] }),
-      () => localStorage.setItem('teams', JSON.stringify(this.state.teams))
+      () => TeamStorage.setTeam(this.state.teams)
     );
   };
 
@@ -91,7 +91,7 @@ class App extends Component {
         newTeams.splice(teamIndex, 1);
         return { teams: newTeams };
       },
-      () => localStorage.setItem('teams', JSON.stringify(this.state.teams))
+      () => TeamStorage.setTeam(this.state.teams)
     );
   };
 
@@ -102,7 +102,7 @@ class App extends Component {
         teams[index] = { ...teams[index], ...updatedTeam };
         return { teams };
       },
-      () => localStorage.setItem('teams', JSON.stringify(this.state.teams))
+      () => TeamStorage.setTeam(this.state.teams)
     );
   };
 
@@ -113,14 +113,14 @@ class App extends Component {
         teams[teamIndex].members = members;
         return { teams };
       },
-      () => localStorage.setItem('teams', JSON.stringify(this.state.teams))
+      () => TeamStorage.setTeam(this.state.teams)
     );
   };
 
   addPerson = (person) => {
     this.setState(
       (prev) => ({ people: [...prev.people, person] }),
-      () => localStorage.setItem('people', JSON.stringify(this.state.people))
+      () => PeopleStorage.setPeople(this.state.people)
     );
   };
 
@@ -136,15 +136,15 @@ class App extends Component {
         return { people, teams };
       },
       () => {
-        localStorage.setItem('people', JSON.stringify(this.state.people));
-        localStorage.setItem('teams', JSON.stringify(this.state.teams));
+        PeopleStorage.setPeople(this.state.people);
+        TeamStorage.setTeam(this.state.teams);
       }
     );
   };
 
   updateSalesData = (newSalesData) => {
     this.setState({ salesData: newSalesData }, () => {
-      localStorage.setItem('salesData', JSON.stringify(this.state.salesData));
+      SalesStorage.setSale(this.state.salesData);
     });
   };
 
