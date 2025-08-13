@@ -215,7 +215,7 @@ class ManageTeamsAndPeople extends Component {
         sm: 'repeat(2, 1fr)',
         md: 'repeat(3, 1fr)',
       },
-      gap: 2.5,
+      gap: 0,
       overflowY: 'auto',
       overflowX: 'hidden',
       scrollbarWidth: 'thin',
@@ -420,9 +420,11 @@ class ManageTeamsAndPeople extends Component {
                     sx={{
                       ...getListStyle(snapshot.isDraggingOver),
                       overflowX: 'hidden',
-                      maxWidth: '90%',
+                      maxWidth: '100%',
+                      minHeight: "350px",
                       boxSizing: 'border-box',
-                      marginBottom: 3,
+                      marginBottom: 0,
+                      paddingTop: "20px !important",
                     }}
                   >
                     {unassignedPeople.length === 0 && (
@@ -440,7 +442,9 @@ class ManageTeamsAndPeople extends Component {
                             sx={{
                               ...getItemStyle(snapshot.isDragging, provided.draggableProps.style),
                               width: '90%',
-                              margin: '0 auto 8px auto',
+                              height: "50px",
+                              margin: '0 auto 4px auto',
+                              paddingLeft: "15px !important"
                             }}
                           >
                             <span style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
@@ -499,6 +503,7 @@ class ManageTeamsAndPeople extends Component {
                           borderColor: team.color,
                           overflowWrap: 'break-word',
                           wordBreak: 'break-word',
+                          padding: ".5em .75em 0 .75em !important"
                         }}
                       >
                         <Box
@@ -580,8 +585,10 @@ class ManageTeamsAndPeople extends Component {
                                     sx={{
                                       ...getItemStyle(snapshot.isDragging, provided.draggableProps.style),
                                       width: '100%',
-                                      marginBottom: '8px',
+                                      height: "50px",
+                                      marginBottom: '2px',
                                       boxSizing: 'border-box',
+                                      paddingLeft: "15px !important"
                                     }}
                                   >
                                     <span style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>

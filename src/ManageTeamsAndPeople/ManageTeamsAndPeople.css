@@ -1,17 +1,14 @@
 .MuiPaper-root{
-    padding: 0 !important;
 }
 
 .css-1kj2szu-MuiContainer-root{
     padding: 0 !important;
 }
 
-.MuiPaper-elevation{
-    padding: 1em !important;
-}
-
 .css-1pqldws{
     max-width: 100% !important;
+    padding: 0 0 0 0;
+    margin: 0 !important;
 }
 
 @media screen and (max-width: 410px) {

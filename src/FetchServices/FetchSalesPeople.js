@@ -1,0 +1,87 @@
+const url =  "http://localhost:8000"
+
+const FetchSalesPeople = {
+    getAllSalesPeople(){
+        return fetch(`${url}/api/salespeople`, {
+            method: "GET",
+            headers: {
+                'content-type': "application/json"
+            }
+        })
+            .then( res => {
+                if(!res){
+                    return res.json().then( e => Promise.reject(e));
+                };
+
+                return res.json();
+            });
+    },
+    getSalesPersonById(id){
+        return fetch(`${url}/api/salespeople/${id}`, {
+            method: "GET",
+            headers: {
+                'content-type': "application/json",
+                'authorization': `bearer `
+            }
+        })
+            .then( res => {
+                if(!res){
+                    return res.json().then( e => Promise.reject(e));
+                };
+
+                return res.json();
+            });
+    },
+    createSalesPerson(token, newSalesPerson){
+        return fetch(`${url}/api/salespeople`, {
+            method: "POST",
+            headers: {
+                'content-type': "application/json",
+                'authorization': `bearer ${token}`
+            },
+            body: JSON.stringify(newSalesPerson)
+        })
+            .then( res => {
+                if(!res){
+                    return res.json().then( e => Promise.reject(e));
+                };
+
+                return res.json();
+            });
+    },
+    updateSalesPersonById(token, updatedSalesPerson, id){
+        return fetch(`${url}/api/salespeople/${id}`, {
+            method: "POST",
+            headers: {
+                'content-type': "application/json",
+                'authorization': `bearer ${token}`
+            },
+            body: JSON.stringify(updatedSalesPerson)
+        })
+            .then( res => {
+                if(!res){
+                    return res.json().then( e => Promise.reject(e));
+                };
+
+                return res.json();
+            });
+    },
+    deleteSalesPerson(token, id){
+        return fetch(`${url}/api/salespeople/${id}`, {
+            method: "POST",
+            headers: {
+                'content-type': "application/json",
+                'authorization': `bearer ${token}`
+            }
+        })
+            .then( res => {
+                if(!res){
+                    return res.json().then( e => Promise.reject(e));
+                };
+
+                return res.json();
+            });
+    }
+};
+
+export default FetchSalesPeople;

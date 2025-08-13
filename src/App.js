@@ -6,7 +6,6 @@ import EnterSales from './EnterSales/EnterSales';
 import CompetitionAndCharts from './CompetitionAndCharts/CompetitionAndCharts';
 import History from './History/History';
 import { Container, Paper } from '@mui/material';
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -15,6 +14,7 @@ import {
   useNavigate,
   useLocation,
 } from 'react-router-dom';
+import FetchData from './FetchServices/FetchData';
 
 // Helper component to bridge hooks with class component
 function TabsRouterWrapper({ onTabChange }) {
@@ -61,6 +61,13 @@ class App extends Component {
       people: JSON.parse(localStorage.getItem('people')) || [],
       salesData: JSON.parse(localStorage.getItem('salesData')) || [],
     };
+  }
+
+  componentDidMount(){
+    FetchData.getData()
+      .then( data => {
+        console.log(data)
+      });
   }
 
   handleTabChange = (newValue) => {
