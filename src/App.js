@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import NavBar from './NavBar/NavBar';
-import TabsMenu from './TabsMenu/TabsMenu';
-import ManageTeamsAndPeople from './ManageTeamsAndPeople/ManageTeamsAndPeople';
-import EnterSales from './EnterSales/EnterSales';
-import CompetitionAndCharts from './CompetitionAndCharts/CompetitionAndCharts';
-import History from './History/History';
+import NavBar from './Components/NavBar/NavBar';
+import TabsMenu from './Components/TabsMenu/TabsMenu';
+import ManageTeamsAndPeople from './Components/ManageTeamsAndPeople/ManageTeamsAndPeople';
+import EnterSales from './Components/EnterSales/EnterSales';
+import CompetitionAndCharts from './Components/CompetitionAndCharts/CompetitionAndCharts';
+import History from './Components/History/History';
 import { Container, Paper } from '@mui/material';
 import {
   BrowserRouter as Router,
@@ -14,7 +14,10 @@ import {
   useNavigate,
   useLocation,
 } from 'react-router-dom';
-import FetchData from './FetchServices/FetchData';
+import FetchData from './Services/FetchServices/FetchData';
+import PeopleStorage from './Services/StorageServices/PeopleStorage';
+import SalesStorage from './Services/StorageServices/SalesStorage';
+import TeamStorage from './Services/StorageServices/TeamStorage';
 
 // Helper component to bridge hooks with class component
 function TabsRouterWrapper({ onTabChange }) {
