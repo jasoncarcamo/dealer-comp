@@ -9,24 +9,26 @@ export default function TabsMenu({ value, onChange }) {
     <Box
       sx={{
         bgcolor: 'background.paper',
-        maxWidth: '100%',
-        overflowX: 'none'
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center', // center horizontally
+        py: 1,
       }}
     >
       <Tabs
-        centered
         value={value}
         onChange={onChange}
-        variant={isMobile ? 'standard' : 'standard'}
-        scrollButtons={isMobile ? false : false}
         orientation={isMobile ? 'vertical' : 'horizontal'}
-        aria-label="Navigation tabs"
+        variant="standard"
+        centered={!isMobile} // centers tabs on desktop
+        scrollButtons={false}
         sx={{
-          minWidth: '100%',
+          width: 'auto',
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
           '& .MuiTab-root': {
             fontSize: isMobile ? '0.75rem' : '1rem',
-            minWidth: isMobile ? 100 : 120,
-            margin: "auto"
+            minWidth: isMobile ? "100%" : 120,
           },
         }}
       >
