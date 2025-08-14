@@ -109,31 +109,108 @@ class History extends Component {
 
   aggregateByMonth() {
     const { salesData, teams } = this.props;
+    let salespersonTotals;
+    let teamTotals;
+    console.log(teamTotals)
+
     if (!Array.isArray(salesData) || !Array.isArray(teams)) return [];
 
     const monthly = {};
 
     salesData.forEach((dayEntry) => {
-      const month = dayEntry.date?.slice(0, 7);
+      let month = new Date(dayEntry.date).getMonth();
+      console.log(month)
+      salespersonTotals = this.getSalespersonTotals(month);
+      teamTotals = this.getTeamTotals(salespersonTotals);
+
       if (!month) return;
+
+      month = dayEntry.date.slice(0, 7);
+
       if (!monthly[month]) {
         monthly[month] = {};
-        teams.forEach((t) => (monthly[month][t.name] = 0));
+        teams.forEach((t) => {
+          return (monthly[month][t.name] = 0)
+        });
       }
       teams.forEach((team) => {
-        if (team.members && team.members.length) {
+        if (team.members) {
           let total = 0;
-          team.members.forEach((m) => {
-            total += dayEntry[m] || 0;
-          });
-          monthly[month][team.name] += total;
+
+          for(const [key, value] of Object.entries(teamTotals)){
+            console.log(key, value)
+            if(key === team.name){
+              total = value;
+            }
+          }
+
+          monthly[month][team.name] = total;
         }
       });
+
     });
 
     return Object.entries(monthly)
       .map(([month, totals]) => ({ month, totals }))
       .sort((a, b) => (a.month > b.month ? 1 : -1));
+  }
+
+  filterSalesDataForCurrentMonth(month) {
+    const { salesData } = this.props;
+    if (!Array.isArray(salesData) || salesData.length === 0) return [];
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    return salesData.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      return (
+        entryDate.getFullYear() === currentYear &&
+        entryDate.getMonth() === month
+      );
+    });
+  }
+
+  getSalespersonTotals(month) {
+    const { teams } = this.props;
+    const filteredData = this.filterSalesDataForCurrentMonth(month);
+    const totals = {};
+
+    console.log(teams)
+
+    const allMembers = new Set();
+    teams.forEach((team) => {
+      if (team.members) team.members.forEach((m) => allMembers.add(m));
+    });
+
+    allMembers.forEach((member) => {
+      totals[member] = 0;
+    });
+
+    filteredData.forEach((dayEntry) => {
+      allMembers.forEach((member) => {
+        totals[member] += dayEntry[member] || 0;
+      });
+    });
+
+    return totals;
+  }
+
+  getTeamTotals(salespersonTotals) {
+    const { teams } = this.props;
+    const teamTotals = {};
+
+    teams.forEach((team) => {
+      let total = 0;
+      if (team.members && team.members.length) {
+        team.members.forEach((member) => {
+          total += salespersonTotals[member] || 0;
+        });
+      }
+      teamTotals[team.name] = total;
+    });
+
+    return teamTotals;
   }
 
   renderTeamName = (personName) => {
@@ -256,6 +333,8 @@ class History extends Component {
   render() {
     const { teams, people } = this.props;
     const { selectedDate, viewMode, dragListOrder } = this.state;
+    const salespersonTotals = this.getSalespersonTotals();
+    const teamTotals = this.getTeamTotals(salespersonTotals);
 
     if (!Array.isArray(teams) || teams.length === 0) {
       return <Typography>No teams to show history for.</Typography>;

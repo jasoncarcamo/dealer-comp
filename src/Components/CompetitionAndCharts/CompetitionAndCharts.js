@@ -151,7 +151,7 @@ class CompetitionAndCharts extends Component {
     const { teams } = this.props;
     const salespersonTotals = this.getSalespersonTotals();
     const teamTotals = this.getTeamTotals(salespersonTotals);
-
+  
     if (!teams.length) {
       return <Typography>No teams available. Please add teams first.</Typography>;
     }

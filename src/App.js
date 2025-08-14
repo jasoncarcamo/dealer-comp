@@ -15,9 +15,9 @@ import {
   useLocation,
 } from 'react-router-dom';
 import FetchData from './Services/FetchServices/FetchData';
-import PeopleStorage from './Services/StorageServices/PeopleStorage';
-import SalesStorage from './Services/StorageServices/SalesStorage';
-import TeamStorage from './Services/StorageServices/TeamStorage';
+import PeopleStorage from './Services/StorageService/PeopleStorage';
+import SalesStorage from './Services/StorageService/SalesStorage';
+import TeamStorage from './Services/StorageService/TeamStorage';
 
 // Helper component to bridge hooks with class component
 function TabsRouterWrapper({ onTabChange }) {
