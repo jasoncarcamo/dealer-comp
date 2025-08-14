@@ -15,7 +15,9 @@ import {
   Button,
   Tooltip,
 } from '@mui/material';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 class History extends Component {
   constructor(props) {
@@ -26,6 +28,122 @@ class History extends Component {
       dragListOrder: [],
     };
   }
+
+  handleDownloadPDF = () => {
+  const { teams } = this.props;
+  const { selectedDate, viewMode } = this.state;
+
+  if (!teams || teams.length === 0) {
+    alert('No teams to generate PDF.');
+    return;
+  }
+
+  const getDateRange = () => {
+    const dateObj = new Date(selectedDate);
+    let startDate, endDate;
+
+    if (viewMode === 'day') {
+      startDate = new Date(selectedDate);
+      endDate = new Date(selectedDate);
+    } else if (viewMode === 'week') {
+      const day = dateObj.getDay();
+      startDate = new Date(dateObj);
+      startDate.setDate(dateObj.getDate() - day);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+    } else if (viewMode === 'month') {
+      startDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+      endDate = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
+    }
+    return { startDate, endDate };
+  };
+
+  const { startDate, endDate } = getDateRange();
+
+  // Determine scaling based on number of rows
+  const totalRows = teams.reduce((acc, team) => acc + Math.max(team.members.length, 5) + 2, 0); // +2 for headers & totals
+  let fontSize = 12;
+  let cellPadding = 6;
+
+  if (totalRows > 25) {
+    fontSize = 10;
+    cellPadding = 4;
+  } 
+  if (totalRows > 40) {
+    fontSize = 8;
+    cellPadding = 3;
+  }
+
+  // Create container for report HTML
+  const container = document.createElement('div');
+  container.style.fontFamily = 'Arial, sans-serif';
+  container.style.padding = '15px';
+  container.style.fontSize = `${fontSize}px`;
+  container.innerHTML = `<h1 style="font-size:${fontSize + 4}px;">Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</h1>
+    <p>Date range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>`;
+
+  teams.forEach((team) => {
+    const teamSales = {};
+    team.members.forEach((m) => { teamSales[m] = 0; });
+
+    this.props.salesData
+      .filter((entry) => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startDate && entryDate <= endDate;
+      })
+      .forEach((entry) => {
+        team.members.forEach((m) => {
+          if (entry[m] !== undefined) teamSales[m] += entry[m];
+        });
+      });
+
+    const maxSales = Math.max(...Object.values(teamSales));
+    const topSalespeople = Object.entries(teamSales)
+      .filter(([_, sales]) => sales === maxSales && maxSales > 0)
+      .map(([person]) => person);
+
+    let teamTotal = 0;
+    let html = `<h2 style="font-size:${fontSize + 2}px;">${team.name}</h2>
+      <table style="border-collapse: collapse; width: 100%; margin-bottom: 10px; font-size:${fontSize}px;">
+        <thead>
+          <tr>
+            <th style="border:1px solid #ccc; padding:${cellPadding}px;text-align:left;">Salesperson</th>
+            <th style="border:1px solid #ccc; padding:${cellPadding}px;text-align:right;">Sales</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    Object.entries(teamSales).forEach(([person, sales]) => {
+      const isTop = topSalespeople.includes(person);
+      html += `<tr style="font-weight: ${isTop ? 'bold' : 'normal'}; background-color: ${isTop ? '#EB0A1E' : 'inherit'}; color: ${isTop ? 'white' : 'inherit'};">
+        <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:left;">${person}${isTop ? ' - Top salesperson' : ''}</td>
+        <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:right;">${sales}</td>
+      </tr>`;
+      teamTotal += sales;
+    });
+
+    html += `<tr style="font-weight:bold;">
+      <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:left;">Total</td>
+      <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:right;">${teamTotal}</td>
+    </tr>`;
+    html += `</tbody></table>`;
+    container.innerHTML += html;
+  });
+
+  import('html2pdf.js').then((html2pdf) => {
+    const opt = {
+      margin: 10,
+      filename: `sales-report-${selectedDate}.pdf`,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+    };
+    html2pdf.default().from(container).set(opt).save();
+  });
+};
+
+
 
   getTodayDate() {
     return new Date().toISOString().slice(0, 10);
@@ -269,74 +387,74 @@ class History extends Component {
   });
 
   // Create HTML for print
-  let html = `
-  <html>
-    <head>
-      <title>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h2 { margin-top: 25px; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
-        th { background-color: #f0f0f0; color: black; }
-        th:first-child, td:first-child { text-align: left; }
-      </style>
-    </head>
-    <body>
-      <h1>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</h1>
-      <p>Date range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
-  `;
+  // inside handlePrint()
+let totalRows = teams.reduce((acc, team) => acc + Math.max(team.members.length, 5) + 2, 0);
+let fontSize = 12;
+let cellPadding = 8;
 
-  teams.forEach((team) => {
-    html += `<h2>${team.name} </h2>`;
-    html += `<table><thead><tr><th>Salesperson</th><th>Sales</th></tr></thead><tbody>`;
+if (totalRows > 25) {
+  fontSize = 10;
+  cellPadding = 6;
+} 
+if (totalRows > 40) {
+  fontSize = 8;
+  cellPadding = 4;
+}
 
-    const teamSales = salesByTeam[team.name];
-    const maxSales = Math.max(...Object.values(teamSales));
-    const topSalespeople = Object.entries(teamSales)
-      .filter(([_, sales]) => sales === maxSales && maxSales > 0)
-      .map(([person]) => person);
+let html = `
+<html>
+  <head>
+    <title>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 20px; font-size: ${fontSize}px; }
+      h1 { font-size: ${fontSize + 4}px; }
+      h2 { font-size: ${fontSize + 2}px; margin-top: 25px; }
+      table { border-collapse: collapse; width: 100%; margin-bottom: 10px; font-size: ${fontSize}px; }
+      th, td { border: 1px solid #ccc; padding: ${cellPadding}px; text-align: right; }
+      th { background-color: #f0f0f0; color: black; }
+      th:first-child, td:first-child { text-align: left; }
+    </style>
+  </head>
+  <body>
+    <h1>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</h1>
+    <p>Date range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
+`;
 
-    let teamTotal = 0;
+teams.forEach((team) => {
+  const teamSales = salesByTeam[team.name];
+  const maxSales = Math.max(...Object.values(teamSales));
+  const topSalespeople = Object.entries(teamSales)
+    .filter(([_, sales]) => sales === maxSales && maxSales > 0)
+    .map(([person]) => person);
 
-    const { teams, people } = this.props;
-    const { selectedDate, viewMode, dragListOrder } = this.state;
-    const salesForPeriod = this.getSalesForPeriod();
-    const salespersonTotals = this.getSalespersonTotals();
-    const monthlyMemberSales = this.getMonthlySalesByMember();
+  let teamTotal = 0;
+  html += `<h2>${team.name}</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Salesperson</th>
+          <th>Sales</th>
+        </tr>
+      </thead>
+      <tbody>`;
 
-    // Calculate total sales for all teams
-    const teamTotals = teams.reduce((acc, team) => {
-      acc[team.name] = team.members.reduce((sum, m) => sum + (salesForPeriod[m] || 0), 0);
-      return acc;
-    }, {});
-
-    // Find the maximum total
-    const maxTotal = Math.max(...Object.values(teamTotals));
-
-    // Check if a specific team has the highest total
-    const isTopTeam = teamTotals[team.name] === maxTotal && maxTotal > 0;
-
-    Object.entries(teamSales).forEach(([person, sales]) => {
-      const isTop = topSalespeople.includes(person);
-      html += `<tr style="
-        font-weight: ${isTop ? 'bold' : 'normal'};
-        background-color: ${isTop ? '#EB0A1E' : 'inherit'};
-        fontWeight: ${isTop ? 'bolder' : 'inherit'};
-      ">
-        <td>${person} ${isTop ? " - Top salesperson in team" : ""}</td>
-        <td>${sales}</td>
-      </tr>`;
-      teamTotal += sales;
-    });
-    
-    html += `<tr style="font-weight: bold}"><td>Total</td><td>${teamTotal}</td></tr>`;
-    html += `</tbody></table>`;
-
-    html += `<p>${isTopTeam ? team.name : ""}</p>`;
+  Object.entries(teamSales).forEach(([person, sales]) => {
+    const isTop = topSalespeople.includes(person);
+    html += `<tr style="font-weight: ${isTop ? 'bold' : 'normal'}; background-color:  'inherit'; color: 'inherit';">
+      <td style="padding:${cellPadding}px;">${person}${isTop ? ' - Top salesperson' : ''}</td>
+      <td style="padding:${cellPadding}px;">${sales}</td>
+    </tr>`;
+    teamTotal += sales;
   });
 
-  html += `</body></html>`;
+  html += `<tr style="font-weight:bold;">
+    <td style="padding:${cellPadding}px;">Total</td>
+    <td style="padding:${cellPadding}px;">${teamTotal}</td>
+  </tr>`;
+  html += `</tbody></table>`;
+});
+
+html += `</body></html>`;
 
 
   // Open print window
@@ -363,201 +481,206 @@ class History extends Component {
 
     return (
       <Box sx={{ maxWidth: 900, margin: '0 auto', p: 3 }}>
-        <Typography variant="h5" gutterBottom>
-          Competition History
-        </Typography>
+  <Typography variant="h5" gutterBottom>
+    Competition History
+  </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-          <TextField
-            label="Select Date"
-            type="date"
-            value={selectedDate}
-            onChange={(e) => this.setState({ selectedDate: e.target.value })}
-            inputProps={{ max: this.getTodayDate() }}
-          />
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(e, val) => val && this.setState({ viewMode: val })}
-            aria-label="View mode"
-            size="small"
-          >
-            <ToggleButton value="day">Day</ToggleButton>
-            <ToggleButton value="week">Week</ToggleButton>
-            <ToggleButton value="month">Month</ToggleButton>
-          </ToggleButtonGroup>
-          <Button variant="contained" sx={{ ml: 2 }} onClick={this.handlePrint}>
-            Print Report
-          </Button>
-        </Box>
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+    <TextField
+      label="Select Date"
+      type="date"
+      value={selectedDate}
+      onChange={(e) => this.setState({ selectedDate: e.target.value })}
+      inputProps={{ max: this.getTodayDate() }}
+    />
+    <ToggleButtonGroup
+      value={viewMode}
+      exclusive
+      onChange={(e, val) => val && this.setState({ viewMode: val })}
+      aria-label="View mode"
+      size="small"
+    >
+      <ToggleButton value="day">Day</ToggleButton>
+      <ToggleButton value="week">Week</ToggleButton>
+      <ToggleButton value="month">Month</ToggleButton>
+    </ToggleButtonGroup>
+    <Button variant="contained" sx={{ ml: 2 }} onClick={this.handlePrint}>
+      Print Report
+    </Button>
+    <Button variant="outlined" sx={{ ml: 1 }} onClick={this.handleDownloadPDF}>
+      Download PDF
+    </Button>
+  </Box>
 
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Sales Progress ({viewMode.charAt(0).toUpperCase() + viewMode.slice(1)}) for {selectedDate}
-        </Typography>
+  <Typography variant="h6" sx={{ mb: 1 }}>
+    Sales Progress ({viewMode.charAt(0).toUpperCase() + viewMode.slice(1)}) for {selectedDate}
+  </Typography>
 
-        <Paper sx={{ maxHeight: 450, overflowY: 'auto', mb: 4, marginBottom: ".25em" }}>
-          <TableContainer>
-            <Table stickyHeader size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Teams</TableCell>
-                  <TableCell align="right">Sales</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {teams && teams.length > 0 ? (
-                  teams.map((team) => {
-                    const teamSales = {};
-                    team.members.forEach((member) => {
-                      teamSales[member] = salesForPeriod[member] || 0;
-                    });
+  {/* PDF Container */}
+  <Box id="sales-report-container" sx={{ backgroundColor: 'white', p: 2 }}>
+    {/* Main Team Table */}
+    <Paper sx={{ maxHeight: 450, overflowY: 'auto', mb: 4 }}>
+      <TableContainer>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Teams</TableCell>
+              <TableCell align="right">Sales</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {teams && teams.length > 0 ? (
+              teams.map((team) => {
+                const teamSales = {};
+                team.members.forEach((member) => {
+                  teamSales[member] = salesForPeriod[member] || 0;
+                });
 
-                    // Determine top salesperson(s) in team
-                    const maxSales = Math.max(...Object.values(teamSales));
-                    const topSalespeople = Object.entries(teamSales)
-                      .filter(([_, sales]) => sales === maxSales && maxSales > 0)
-                      .map(([person]) => person);
+                const maxSales = Math.max(...Object.values(teamSales));
+                const topSalespeople = Object.entries(teamSales)
+                  .filter(([_, sales]) => sales === maxSales && maxSales > 0)
+                  .map(([person]) => person);
 
-                    let teamTotal = Object.values(teamSales).reduce((a, b) => a + b, 0);
+                let teamTotal = Object.values(teamSales).reduce((a, b) => a + b, 0);
 
-                    // Calculate total sales for all teams
-                    const teamTotals = teams.reduce((acc, team) => {
-                      acc[team.name] = team.members.reduce((sum, m) => sum + (salesForPeriod[m] || 0), 0);
-                      return acc;
-                    }, {});
-                    // Find the maximum total
-                    const maxTotal = Math.max(...Object.values(teamTotals));
-                    // Check if a specific team has the highest total
-                    const isTopTeam = teamTotals[team.name] === maxTotal && maxTotal > 0;
+                const teamTotals = teams.reduce((acc, team) => {
+                  acc[team.name] = team.members.reduce((sum, m) => sum + (salesForPeriod[m] || 0), 0);
+                  return acc;
+                }, {});
+                const maxTotal = Math.max(...Object.values(teamTotals));
+                const isTopTeam = teamTotals[team.name] === maxTotal && maxTotal > 0;
 
-                    return (
-                      <React.Fragment key={team.name}>
-                        <TableRow>
-                          <TableCell colSpan={2} sx={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
-                            {team.name}{`${isTopTeam ? " - Winner" : ""}`}
-                          </TableCell>
-                        </TableRow>
-                        {Object.entries(teamSales).map(([person, sales]) => (
-                          <TableRow
-                            key={person}
-                            sx={{
-                              fontWeight: topSalespeople.includes(person) ? 'bold' : 'normal',
-                              backgroundColor: topSalespeople.includes(person) ? '#EB0A1E' : 'inherit',
-                            }}
-                          >
-                            <TableCell sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>{person} {topSalespeople.includes(person) ? " - Top salesperson in team" : ""}</TableCell>
-                            <TableCell 
-                              align="right" 
-                              sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>{sales}</TableCell>
-                          </TableRow>
-                        ))}
-                        <TableRow>
-                          <TableCell sx={{ fontWeight: 'bold'}}>Total</TableCell>
-                          <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                            {teamTotal}
-                          </TableCell>
-                        </TableRow>
-                      </React.Fragment>
-                    );
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} align="center">
-                      No salespeople found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-
-
-        {/* Mobile Cards */}
-        <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 4 }}>
-          {this.aggregateByMonth().map(({ month, totals }) => {
-            const maxSales = Math.max(...Object.values(totals));
-            return (
-              <Paper key={month} sx={{ p: 2, mb: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  {month}
-                </Typography>
-                {teams.map((team) => {
-                  const isMax = totals[team.name] === maxSales;
-                  const members = team.members || [];
-                  return (
-                    <Tooltip
-                      key={team.name}
-                      title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
-                      arrow
-                    >
-                      <Box
+                return (
+                  <React.Fragment key={team.name}>
+                    <TableRow>
+                      <TableCell colSpan={2} sx={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
+                        {team.name}{`${isTopTeam ? " - Winner" : ""}`}
+                      </TableCell>
+                    </TableRow>
+                    {Object.entries(teamSales).map(([person, sales]) => (
+                      <TableRow
+                        key={person}
                         sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          mb: 0.5,
-                          p: 1,
-                          bgcolor: '#f0f0f0',
-                          borderRadius: 1,
-                          fontWeight: isMax ? 'bold' : 'normal',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                          fontWeight: topSalespeople.includes(person) ? 'bold' : 'normal',
+                          backgroundColor: topSalespeople.includes(person) ? '#EB0A1E' : 'inherit',
                         }}
                       >
-                        <span>{team.name}</span>
-                        <span>{totals[team.name] || 0}</span>
-                      </Box>
-                    </Tooltip>
-                  );
-                })}
-              </Paper>
-            );
-          })}
-        </Box>
-
-        {/* Desktop Table */}
-        <Box sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>
-          <TableContainer component={Paper} sx={{ minWidth: 600 }}>
-            <Table stickyHeader size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Month</TableCell>
-                  {teams.map((team) => (
-                    <TableCell key={team.name} align="right">{team.name}</TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.aggregateByMonth().map(({ month, totals }) => {
-                  const maxSales = Math.max(...Object.values(totals));
-                  return (
-                    <TableRow key={month}>
-                      <TableCell>{month}</TableCell>
-                      {teams.map((team) => {
-                        const isMax = totals[team.name] === maxSales;
-                        const members = team.members || [];
-                        return (
-                          <Tooltip
-                            key={team.name}
-                            title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
-                            arrow
-                          >
-                            <TableCell
-                              align="right"
-                              sx={{ fontWeight: isMax ? 'bold' : 'normal', cursor: 'pointer', minWidth: 80 }}
-                            >
-                              {totals[team.name] || 0}
-                            </TableCell>
-                          </Tooltip>
-                        );
-                      })}
+                        <TableCell sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>
+                          {person} {topSalespeople.includes(person) ? " - Top salesperson in team" : ""}
+                        </TableCell>
+                        <TableCell align="right" sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>
+                          {sales}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 'bold'}}>Total</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                        {teamTotal}
+                      </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      </Box>
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={2} align="center">
+                  No salespeople found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+
+    {/* Mobile Cards */}
+    <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 4 }}>
+      {this.aggregateByMonth().map(({ month, totals }) => {
+        const maxSales = Math.max(...Object.values(totals));
+        return (
+          <Paper key={month} sx={{ p: 2, mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+              {month}
+            </Typography>
+            {teams.map((team) => {
+              const isMax = totals[team.name] === maxSales;
+              const members = team.members || [];
+              return (
+                <Tooltip
+                  key={team.name}
+                  title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
+                  arrow
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mb: 0.5,
+                      p: 1,
+                      bgcolor: '#f0f0f0',
+                      borderRadius: 1,
+                      fontWeight: isMax ? 'bold' : 'normal',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    <span>{team.name}</span>
+                    <span>{totals[team.name] || 0}</span>
+                  </Box>
+                </Tooltip>
+              );
+            })}
+          </Paper>
+        );
+      })}
+    </Box>
+
+    {/* Desktop Table */}
+    <Box sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>
+      <TableContainer component={Paper} sx={{ minWidth: 600 }}>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Month</TableCell>
+              {teams.map((team) => (
+                <TableCell key={team.name} align="right">{team.name}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {this.aggregateByMonth().map(({ month, totals }) => {
+              const maxSales = Math.max(...Object.values(totals));
+              return (
+                <TableRow key={month}>
+                  <TableCell>{month}</TableCell>
+                  {teams.map((team) => {
+                    const isMax = totals[team.name] === maxSales;
+                    const members = team.members || [];
+                    return (
+                      <Tooltip
+                        key={team.name}
+                        title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
+                        arrow
+                      >
+                        <TableCell
+                          align="right"
+                          sx={{ fontWeight: isMax ? 'bold' : 'normal', cursor: 'pointer', minWidth: 80 }}
+                        >
+                          {totals[team.name] || 0}
+                        </TableCell>
+                      </Tooltip>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  </Box>
+</Box>
+
     );
   }
 }
