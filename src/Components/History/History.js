@@ -113,7 +113,9 @@ class History extends Component {
         </thead>
         <tbody>`;
 
-    Object.entries(teamSales).forEach(([person, sales]) => {
+    Object.entries(teamSales)
+  .sort((a, b) => b[1] - a[1])
+  .forEach(([person, sales]) => {
       const isTop = topSalespeople.includes(person);
       html += `<tr style="font-weight: ${isTop ? 'bold' : 'normal'}; background-color: ${isTop ? '#EB0A1E' : 'inherit'}; color: ${isTop ? 'white' : 'inherit'};">
         <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:left;">${person}${isTop ? ' - Top salesperson' : ''}</td>
@@ -438,7 +440,9 @@ teams.forEach((team) => {
       </thead>
       <tbody>`;
 
-  Object.entries(teamSales).forEach(([person, sales]) => {
+  Object.entries(teamSales)
+  .sort((a, b) => b[1] - a[1])
+  .forEach(([person, sales]) => {
     const isTop = topSalespeople.includes(person);
     html += `<tr style="font-weight: ${isTop ? 'bold' : 'normal'}; background-color:  'inherit'; color: 'inherit';">
       <td style="padding:${cellPadding}px;">${person}${isTop ? ' - Top salesperson' : ''}</td>
@@ -557,83 +561,85 @@ html += `</body></html>`;
                         {team.name}{`${isTopTeam ? " - Winner" : ""}`}
                       </TableCell>
                     </TableRow>
-                    {Object.entries(teamSales).map(([person, sales]) => (
-                      <TableRow
-                        key={person}
-                        sx={{
-                          fontWeight: topSalespeople.includes(person) ? 'bold' : 'normal',
-                          backgroundColor: topSalespeople.includes(person) ? '#EB0A1E' : 'inherit',
-                        }}
-                      >
-                        <TableCell sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>
-                          {person} {topSalespeople.includes(person) ? " - Top salesperson in team" : ""}
-                        </TableCell>
-                        <TableCell align="right" sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>
-                          {sales}
+                    {Object.entries(teamSales)
+                      .sort((a, b) => b[1] - a[1]) // sort descending by sales
+                      .map(([person, sales]) => (
+                        <TableRow
+                          key={person}
+                          sx={{
+                            fontWeight: topSalespeople.includes(person) ? 'bold' : 'normal',
+                            backgroundColor: topSalespeople.includes(person) ? '#EB0A1E' : 'inherit',
+                          }}
+                        >
+                          <TableCell sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>
+                            {person} {topSalespeople.includes(person) ? " - Top salesperson in team" : ""}
+                          </TableCell>
+                          <TableCell align="right" sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>
+                            {sales}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold'}}>Total</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                          {teamTotal}
                         </TableCell>
                       </TableRow>
-                    ))}
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 'bold'}}>Total</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                        {teamTotal}
-                      </TableCell>
-                    </TableRow>
-                  </React.Fragment>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={2} align="center">
-                  No salespeople found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+                    </React.Fragment>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
+                    No salespeople found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
 
-    {/* Mobile Cards */}
-    <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 4 }}>
-      {this.aggregateByMonth().map(({ month, totals }) => {
-        const maxSales = Math.max(...Object.values(totals));
-        return (
-          <Paper key={month} sx={{ p: 2, mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-              {month}
-            </Typography>
-            {teams.map((team) => {
-              const isMax = totals[team.name] === maxSales;
-              const members = team.members || [];
-              return (
-                <Tooltip
-                  key={team.name}
-                  title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
-                  arrow
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      mb: 0.5,
-                      p: 1,
-                      bgcolor: '#f0f0f0',
-                      borderRadius: 1,
-                      fontWeight: isMax ? 'bold' : 'normal',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                    }}
+      {/* Mobile Cards */}
+      <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 4 }}>
+        {this.aggregateByMonth().map(({ month, totals }) => {
+          const maxSales = Math.max(...Object.values(totals));
+          return (
+            <Paper key={month} sx={{ p: 2, mb: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                {month}
+              </Typography>
+              {teams.map((team) => {
+                const isMax = totals[team.name] === maxSales;
+                const members = team.members || [];
+                return (
+                  <Tooltip
+                    key={team.name}
+                    title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
+                    arrow
                   >
-                    <span>{team.name}</span>
-                    <span>{totals[team.name] || 0}</span>
-                  </Box>
-                </Tooltip>
-              );
-            })}
-          </Paper>
-        );
-      })}
-    </Box>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 0.5,
+                        p: 1,
+                        bgcolor: '#f0f0f0',
+                        borderRadius: 1,
+                        fontWeight: isMax ? 'bold' : 'normal',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      }}
+                    >
+                      <span>{team.name}</span>
+                      <span>{totals[team.name] || 0}</span>
+                    </Box>
+                  </Tooltip>
+                );
+              })}
+            </Paper>
+          );
+        })}
+      </Box>
 
     {/* Desktop Table */}
     <Box sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>

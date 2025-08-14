@@ -19,7 +19,7 @@ class Competition extends Component {
             >
             Add Random Sales
         </Button>
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={450}>
           <LineChart data={salesData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
