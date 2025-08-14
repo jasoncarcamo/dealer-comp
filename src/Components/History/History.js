@@ -275,7 +275,7 @@ class History extends Component {
       <title>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</title>
       <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
-        h2 { margin-top: 30px; }
+        h2 { margin-top: 25px; }
         table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
         th { background-color: #f0f0f0; color: black; }
@@ -288,7 +288,7 @@ class History extends Component {
   `;
 
   teams.forEach((team) => {
-    html += `<h2>Team: ${team.name} </h2>`;
+    html += `<h2>${team.name} </h2>`;
     html += `<table><thead><tr><th>Salesperson</th><th>Sales</th></tr></thead><tbody>`;
 
     const teamSales = salesByTeam[team.name];
@@ -330,15 +330,17 @@ class History extends Component {
       teamTotal += sales;
     });
     
-    html += `<tr style="font-weight: bold}"><td>Total ${isTopTeam ? " - Winning" : ""}</td><td>${teamTotal}</td></tr>`;
+    html += `<tr style="font-weight: bold}"><td>Total</td><td>${teamTotal}</td></tr>`;
     html += `</tbody></table>`;
+
+    html += `<p>${isTopTeam ? team.name : ""}</p>`;
   });
 
   html += `</body></html>`;
 
 
   // Open print window
-  const printWindow = window.open('', '', 'width=900,height=700');
+  const printWindow = window.open('', '', 'width=1000,height=800');
   printWindow.document.write(html);
   printWindow.document.close();
   printWindow.focus();

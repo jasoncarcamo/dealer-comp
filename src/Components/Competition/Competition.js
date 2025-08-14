@@ -27,7 +27,7 @@ class Competition extends Component {
             <Tooltip />
             <Legend />
             {teams.map(team => (
-              <Line key={team.name} type="monotone" dataKey={team.name} stroke={team.color} />
+              <Line key={team.name} type="natural" dataKey={team.name} stroke={team.color} />
             ))}
           </LineChart>
         </ResponsiveContainer>

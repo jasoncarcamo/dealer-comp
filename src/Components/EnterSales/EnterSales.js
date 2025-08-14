@@ -106,22 +106,38 @@ class EnterSales extends Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {people.map((person) => (
-                <TableRow key={person.name}>
-                  <TableCell>{person.name}</TableCell>
-                  <TableCell align="right">
-                    <TextField
-                      type="number"
-                      inputProps={{ min: 0 }}
-                      value={salesInputs[person.name] || 0}
-                      onChange={(e) =>
-                        this.handleSalesChange(person.name, e.target.value)
-                      }
-                      size="small"
-                      aria-label={`Cars sold by ${person.name}`}
-                    />
-                  </TableCell>
-                </TableRow>
+              {[...people]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((person) => (
+                  <TableRow key={person.name}>
+                    <TableCell>{person.name}</TableCell>
+                    <TableCell align="right">
+                      <TextField
+                        type="number"
+                        value={salesInputs[person.name]}
+                        onChange={(e) => this.handleSalesChange(person.name, e.target.value)}
+                        size="small"
+                        inputProps={{
+                          min: 0,
+                          style: { textAlign: "right" },
+                          inputMode: "numeric",
+                          pattern: "[0-9]*"
+                        }}
+                        sx={{
+                          "& input": {
+                            paddingRight: "6px",
+                          },
+                          "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                            WebkitAppearance: "none",
+                            margin: 0
+                          },
+                          "& input[type=number]": {
+                            MozAppearance: "textfield"
+                          }
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
               ))}
             </TableBody>
           </Table>
