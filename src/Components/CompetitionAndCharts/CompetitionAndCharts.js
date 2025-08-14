@@ -148,138 +148,147 @@ class CompetitionAndCharts extends Component {
   };
 
   render() {
-    const { teams } = this.props;
-    const salespersonTotals = this.getSalespersonTotals();
-    const teamTotals = this.getTeamTotals(salespersonTotals);
-  
-    if (!teams.length) {
-      return <Typography>No teams available. Please add teams first.</Typography>;
-    }
+  const { teams } = this.props;
+  const salespersonTotals = this.getSalespersonTotals();
+  const teamTotals = this.getTeamTotals(salespersonTotals);
 
-    if (teams.length === 0 || Object.keys(teamTotals).length === 0) {
-      return <Typography>No sales data available for the current month.</Typography>;
-    }
+  // Get current month and year
+  const now = new Date();
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
-    const barData = teams.map((team) => ({
-      team: team.name,
-      totalSales: teamTotals[team.name] || 0,
-      color: team.color || '#8884d8',
-    }));
+  if (!teams.length) {
+    return <Typography>No teams available. Please add teams first.</Typography>;
+  }
 
-    return (
-      <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 2 }}>
+  if (teams.length === 0 || Object.keys(teamTotals).length === 0) {
+    return <Typography>No sales data available for {currentMonthYear}.</Typography>;
+  }
+
+  const barData = teams.map((team) => ({
+    team: team.name,
+    totalSales: teamTotals[team.name] || 0,
+    color: team.color || '#8884d8',
+  }));
+
+  return (
+    <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 2 }}>
+      <Typography variant="h5" gutterBottom>
+        Team Sales ({currentMonthYear})
+      </Typography>
+
+      {/* Totals summary */}
+      <Box sx={{ mb: 4 }}>
+        {teams.map((team) => (
+          <Paper
+            key={team.name}
+            sx={{ mb: 2, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}
+          >
+            <Typography variant="h6" sx={{ color: team.color }}>
+              {team.name} — Total Sales: {teamTotals[team.name] || 0}
+            </Typography>
+            <Box sx={{ pl: 2, mt: 1 }}>
+              {team.members && team.members.length ? (
+                team.members.map((member) => (
+                  <Typography key={member} variant="body2" sx={{ color: '#555' }}>
+                    {member}: {salespersonTotals[member] || 0}
+                  </Typography>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No members
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        ))}
+      </Box>
+
+      {/* Bar chart */}
+      <ResponsiveContainer width="100%" height={400}>
+        <BarChart
+          data={barData}
+          margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+          barCategoryGap="25%"
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="team" tick={{ textAnchor: 'middle' }} />
+          <YAxis allowDecimals={false} />
+          <Tooltip content={<this.CustomTooltip />} />
+          <Legend />
+          <Bar dataKey="totalSales" name="Total Sales">
+            {barData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+
+      {/* Sub line charts */}
+      <Box sx={{ mt: 6 }}>
         <Typography variant="h5" gutterBottom>
-          Team Sales Over Time (Current Month)
+          Salesperson Daily Sales by Team ({currentMonthYear})
         </Typography>
+        {teams.map((team) => {
+          if (!team.members || team.members.length === 0) {
+            return (
+              <Typography key={team.name} color="text.secondary" sx={{ mb: 3 }}>
+                No members in team "{team.name}" to display sales.
+              </Typography>
+            );
+          }
 
-        {/* Totals summary */}
-        <Box sx={{ mb: 4 }}>
-          {teams.map((team) => (
+          const salesDataPerSalesperson = this.aggregateSalesBySalesperson(team);
+          const colors = this.generateColors(team.members.length);
+
+          return (
             <Paper
               key={team.name}
-              sx={{ mb: 2, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}
+              sx={{
+                mb: 5,
+                p: 2,
+                borderLeft: `6px solid ${team.color}`,
+                boxShadow: 1,
+              }}
+              aria-label={`Salesperson daily sales for team ${team.name}`}
             >
-              <Typography variant="h6" sx={{ color: team.color }}>
-                {team.name} — Total Sales: {teamTotals[team.name] || 0}
+              <Typography variant="h6" sx={{ color: team.color, mb: 2 }}>
+                {team.name} - Salesperson Daily Sales
               </Typography>
-              <Box sx={{ pl: 2, mt: 1 }}>
-                {team.members && team.members.length ? (
-                  team.members.map((member) => (
-                    <Typography key={member} variant="body2" sx={{ color: '#555' }}>
-                      {member}: {salespersonTotals[member] || 0}
-                    </Typography>
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No members
-                  </Typography>
-                )}
-              </Box>
+
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart
+                  data={salesDataPerSalesperson}
+                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  {team.members.map((member, idx) => (
+                    <Line
+                      key={member}
+                      type="monotone"
+                      dataKey={member}
+                      stroke={colors[idx]}
+                      dot={false}
+                      strokeWidth={2}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
             </Paper>
-          ))}
-        </Box>
-
-        {/* Bar chart for current month total sales per team */}
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart
-            data={barData}
-            margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-            barCategoryGap="25%"
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="team" tick={{ textAnchor: 'middle' }} />
-            <YAxis allowDecimals={false} />
-            <Tooltip content={<this.CustomTooltip />} />
-            <Legend />
-            <Bar dataKey="totalSales" name="Total Sales">
-              {barData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-
-        {/* Sub line charts per team showing salesperson daily sales */}
-        <Box sx={{ mt: 6 }}>
-          <Typography variant="h5" gutterBottom>
-            Salesperson Daily Sales by Team (Current Month)
-          </Typography>
-          {teams.map((team) => {
-            if (!team.members || team.members.length === 0) {
-              return (
-                <Typography key={team.name} color="text.secondary" sx={{ mb: 3 }}>
-                  No members in team "{team.name}" to display sales.
-                </Typography>
-              );
-            }
-
-            const salesDataPerSalesperson = this.aggregateSalesBySalesperson(team);
-            const colors = this.generateColors(team.members.length);
-
-            return (
-              <Paper
-                key={team.name}
-                sx={{
-                  mb: 5,
-                  p: 2,
-                  borderLeft: `6px solid ${team.color}`,
-                  boxShadow: 1,
-                }}
-                aria-label={`Salesperson daily sales for team ${team.name}`}
-              >
-                <Typography variant="h6" sx={{ color: team.color, mb: 2 }}>
-                  {team.name} - Salesperson Daily Sales
-                </Typography>
-
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart
-                    data={salesDataPerSalesperson}
-                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    {team.members.map((member, idx) => (
-                      <Line
-                        key={member}
-                        type="monotone"
-                        dataKey={member}
-                        stroke={colors[idx]}
-                        dot={false}
-                        strokeWidth={2}
-                      />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              </Paper>
-            );
-          })}
-        </Box>
+          );
+        })}
       </Box>
-    );
-  }
+    </Box>
+  );
+}
+
 }
 
 export default CompetitionAndCharts;

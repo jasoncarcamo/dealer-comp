@@ -32,7 +32,7 @@ export default function TabsMenu({ value, onChange }) {
       >
         <Tab label="Manage Teams" />
         <Tab label="Enter Sales" />
-        <Tab label="Competition" />
+        <Tab label="Current Competition" />
         <Tab label="History" />
       </Tabs>
     </Box>

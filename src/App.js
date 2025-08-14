@@ -69,7 +69,6 @@ class App extends Component {
   componentDidMount(){
     FetchData.getData()
       .then( data => {
-        console.log(data)
       });
   }
 
@@ -157,7 +156,6 @@ class App extends Component {
   };
 
   render() {
-    console.log(this.state);
     return (
       <Router>
         <div>

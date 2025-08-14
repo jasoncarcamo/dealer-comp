@@ -270,38 +270,72 @@ class History extends Component {
 
   // Create HTML for print
   let html = `
-    <html>
-      <head>
-        <title>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h2 { margin-top: 30px; }
-          table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
-          th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
-          th { background-color: #f0f0f0; color: black; }
-          th:first-child, td:first-child { text-align: left; }
-        </style>
-      </head>
-      <body>
-        <h1>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</h1>
-        <p>Date range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
+  <html>
+    <head>
+      <title>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { margin-top: 30px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
+        th { background-color: #f0f0f0; color: black; }
+        th:first-child, td:first-child { text-align: left; }
+      </style>
+    </head>
+    <body>
+      <h1>Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</h1>
+      <p>Date range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
   `;
 
   teams.forEach((team) => {
-    html += `<h2>Team: ${team.name}</h2>`;
+    html += `<h2>Team: ${team.name} </h2>`;
     html += `<table><thead><tr><th>Salesperson</th><th>Sales</th></tr></thead><tbody>`;
 
+    const teamSales = salesByTeam[team.name];
+    const maxSales = Math.max(...Object.values(teamSales));
+    const topSalespeople = Object.entries(teamSales)
+      .filter(([_, sales]) => sales === maxSales && maxSales > 0)
+      .map(([person]) => person);
+
     let teamTotal = 0;
-    Object.entries(salesByTeam[team.name]).forEach(([person, sales]) => {
-      html += `<tr><td>${person}</td><td>${sales}</td></tr>`;
+
+    const { teams, people } = this.props;
+    const { selectedDate, viewMode, dragListOrder } = this.state;
+    const salesForPeriod = this.getSalesForPeriod();
+    const salespersonTotals = this.getSalespersonTotals();
+    const monthlyMemberSales = this.getMonthlySalesByMember();
+
+    // Calculate total sales for all teams
+    const teamTotals = teams.reduce((acc, team) => {
+      acc[team.name] = team.members.reduce((sum, m) => sum + (salesForPeriod[m] || 0), 0);
+      return acc;
+    }, {});
+
+    // Find the maximum total
+    const maxTotal = Math.max(...Object.values(teamTotals));
+
+    // Check if a specific team has the highest total
+    const isTopTeam = teamTotals[team.name] === maxTotal && maxTotal > 0;
+
+    Object.entries(teamSales).forEach(([person, sales]) => {
+      const isTop = topSalespeople.includes(person);
+      html += `<tr style="
+        font-weight: ${isTop ? 'bold' : 'normal'};
+        background-color: ${isTop ? '#EB0A1E' : 'inherit'};
+        fontWeight: ${isTop ? 'bolder' : 'inherit'};
+      ">
+        <td>${person} ${isTop ? " - Top salesperson in team" : ""}</td>
+        <td>${sales}</td>
+      </tr>`;
       teamTotal += sales;
     });
-
-    html += `<tr style="font-weight:bold;"><td>Total</td><td>${teamTotal}</td></tr>`;
+    
+    html += `<tr style="font-weight: bold}"><td>Total ${isTopTeam ? " - Winning" : ""}</td><td>${teamTotal}</td></tr>`;
     html += `</tbody></table>`;
   });
 
   html += `</body></html>`;
+
 
   // Open print window
   const printWindow = window.open('', '', 'width=900,height=700');
@@ -360,71 +394,81 @@ class History extends Component {
         </Typography>
 
         <Paper sx={{ maxHeight: 450, overflowY: 'auto', mb: 4, marginBottom: ".25em" }}>
-        <TableContainer>
-          <Table stickyHeader size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Teams</TableCell>
-                <TableCell align="right">Sales</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {teams && teams.length > 0 ? (
-                teams.map((team) => {
-                  const teamSales = {};
-                  team.members.forEach((member) => {
-                    teamSales[member] = salesForPeriod[member] || 0;
-                  });
-
-                  // Determine top salesperson(s) in team
-                  const maxSales = Math.max(...Object.values(teamSales));
-                  const topSalespeople = Object.entries(teamSales)
-                    .filter(([_, sales]) => sales === maxSales && maxSales > 0)
-                    .map(([person]) => person);
-
-                  let teamTotal = Object.values(teamSales).reduce((a, b) => a + b, 0);
-
-                  return (
-                    <React.Fragment key={team.name}>
-                      <TableRow>
-                        <TableCell colSpan={2} sx={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
-                          {team.name}
-                        </TableCell>
-                      </TableRow>
-                      {Object.entries(teamSales).map(([person, sales]) => (
-                        <TableRow
-                          key={person}
-                          sx={{
-                            fontWeight: topSalespeople.includes(person) ? 'bold' : 'normal',
-                            backgroundColor: topSalespeople.includes(person) ? '#EB0A1E' : 'inherit',
-                          }}
-                        >
-                          <TableCell sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>{person}</TableCell>
-                          <TableCell 
-                            align="right" 
-                            sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>{sales}</TableCell>
-                        </TableRow>
-                      ))}
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold' }}>Total</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                          {teamTotal}
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  );
-                })
-              ) : (
+          <TableContainer>
+            <Table stickyHeader size="small">
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={2} align="center">
-                    No salespeople found.
-                  </TableCell>
+                  <TableCell>Teams</TableCell>
+                  <TableCell align="right">Sales</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+              </TableHead>
+              <TableBody>
+                {teams && teams.length > 0 ? (
+                  teams.map((team) => {
+                    const teamSales = {};
+                    team.members.forEach((member) => {
+                      teamSales[member] = salesForPeriod[member] || 0;
+                    });
+
+                    // Determine top salesperson(s) in team
+                    const maxSales = Math.max(...Object.values(teamSales));
+                    const topSalespeople = Object.entries(teamSales)
+                      .filter(([_, sales]) => sales === maxSales && maxSales > 0)
+                      .map(([person]) => person);
+
+                    let teamTotal = Object.values(teamSales).reduce((a, b) => a + b, 0);
+
+                    // Calculate total sales for all teams
+                    const teamTotals = teams.reduce((acc, team) => {
+                      acc[team.name] = team.members.reduce((sum, m) => sum + (salesForPeriod[m] || 0), 0);
+                      return acc;
+                    }, {});
+                    // Find the maximum total
+                    const maxTotal = Math.max(...Object.values(teamTotals));
+                    // Check if a specific team has the highest total
+                    const isTopTeam = teamTotals[team.name] === maxTotal && maxTotal > 0;
+
+                    return (
+                      <React.Fragment key={team.name}>
+                        <TableRow>
+                          <TableCell colSpan={2} sx={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
+                            {team.name}{`${isTopTeam ? " - Winner" : ""}`}
+                          </TableCell>
+                        </TableRow>
+                        {Object.entries(teamSales).map(([person, sales]) => (
+                          <TableRow
+                            key={person}
+                            sx={{
+                              fontWeight: topSalespeople.includes(person) ? 'bold' : 'normal',
+                              backgroundColor: topSalespeople.includes(person) ? '#EB0A1E' : 'inherit',
+                            }}
+                          >
+                            <TableCell sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>{person} {topSalespeople.includes(person) ? " - Top salesperson in team" : ""}</TableCell>
+                            <TableCell 
+                              align="right" 
+                              sx={{color: topSalespeople.includes(person) ? 'white' : 'inherit',}}>{sales}</TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 'bold'}}>Total</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                            {teamTotal}
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} align="center">
+                      No salespeople found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
 
 
         {/* Mobile Cards */}
