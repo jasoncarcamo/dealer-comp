@@ -32,12 +32,11 @@ const FetchTeams = {
                 return res.json();
             });
     },
-    createTeam(token, newTeam){
+    createTeam(newTeam){
         return fetch(`${url}/api/teams`, {
             method: "POST",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             },
             body: JSON.stringify(newTeam)
         })
@@ -49,12 +48,11 @@ const FetchTeams = {
                 return res.json();
             });
     },
-    updateTeamById(token, updatedTeam, id){
+    updateTeamById(updatedTeam, id){
         return fetch(`${url}/api/teams/${id}`, {
-            method: "POST",
+            method: "PATCH",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             },
             body: JSON.stringify(updatedTeam)
         })
@@ -66,12 +64,11 @@ const FetchTeams = {
                 return res.json();
             });
     },
-    deleteTeam(token, id){
+    deleteTeamById(id){
         return fetch(`${url}/api/teams/${id}`, {
-            method: "POST",
+            method: "DELETE",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             }
         })
             .then( res => {

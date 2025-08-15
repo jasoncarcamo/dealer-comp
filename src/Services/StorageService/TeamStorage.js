@@ -2,7 +2,7 @@ const TeamStorage = {
     getTeams(){
         return localStorage.getItem("teams");
     },
-    setTeam(team){
+    setTeams(team){
         return localStorage.setItem('teams', JSON.stringify(team));
     }
 };

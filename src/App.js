@@ -19,6 +19,7 @@ import PeopleStorage from './Services/StorageService/PeopleStorage';
 import SalesStorage from './Services/StorageService/SalesStorage';
 import TeamStorage from './Services/StorageService/TeamStorage';
 import FetchSalesPeople from './Services/FetchServices/FetchSalesPeople';
+import FetchTeams from './Services/FetchServices/FetchTeams';
 
 // Helper component to bridge hooks with class component
 function TabsRouterWrapper({ onTabChange }) {
@@ -70,6 +71,13 @@ class App extends Component {
   componentDidMount(){
     FetchData.getData()
       .then( data => {console.log(data)
+        const teams = data.teams;
+
+        TeamStorage.setTeams(teams);
+
+        this.setState({
+          teams: JSON.parse(TeamStorage.getTeams())
+        });
       });
   }
 
@@ -78,32 +86,58 @@ class App extends Component {
   };
 
   addTeam = (team) => {
-    this.setState(
-      (prev) => ({ teams: [...prev.teams, team] }),
-      () => TeamStorage.setTeam(this.state.teams)
-    );
+    FetchTeams.createTeam(team)
+      .then( createdTeam => {
+        console.log(createdTeam)
+        this.setState(
+          (prev) => ({ teams: [...prev.teams, createdTeam] }),
+          () => TeamStorage.setTeams(this.state.teams)
+        );
+      })
+      .catch( err => console.log(err))
   };
 
   removeTeam = (teamIndex) => {
-    this.setState(
-      (prev) => {
-        const newTeams = [...prev.teams];
-        newTeams.splice(teamIndex, 1);
-        return { teams: newTeams };
-      },
-      () => TeamStorage.setTeam(this.state.teams)
-    );
-  };
+  const teamToRemove = this.state.teams[teamIndex];
+  console.log(teamToRemove)
+
+  FetchTeams.deleteTeamById(teamToRemove.id)
+    .then((deletedTeam) => {
+      console.log(deletedTeam)
+      this.setState(
+        (prev) => ({
+          teams: prev.teams.filter((t) => {
+            console.log(t)
+            return t.id !== deletedTeam.id
+          })
+        }),
+        () => TeamStorage.setTeams(this.state.teams)
+      );
+    })
+    .catch((err) => {
+      console.error("Failed to delete team:", err);
+    });
+};
+
 
   updateTeam = (index, updatedTeam) => {
-    this.setState(
-      (prev) => {
-        const teams = [...prev.teams];
-        teams[index] = { ...teams[index], ...updatedTeam };
-        return { teams };
-      },
-      () => TeamStorage.setTeam(this.state.teams)
-    );
+    const teams = [...this.state.teams];
+
+    const editedTeam = { ...teams[index], ...updatedTeam };
+
+    FetchTeams.updateTeamById(editedTeam, editedTeam.id)
+      .then( patchedTeam => {
+        
+        teams[index] = editedTeam;
+        
+        this.setState(
+          (prev) => {
+            return { teams };
+          },
+          () => TeamStorage.setTeams(this.state.teams)
+        );
+      })
+      .catch(err => console.log(err))
   };
 
   updateTeamMembers = (teamIndex, members) => {
@@ -125,7 +159,7 @@ class App extends Component {
 
     FetchSalesPeople.createSalesPerson("", newPerson)
       .then( createdPerson => {
-        
+
         this.setState(
           (prev) => ({ people: [...prev.people, createdPerson] }),
           () => PeopleStorage.setPeople(this.state.people)
