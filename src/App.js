@@ -74,9 +74,11 @@ class App extends Component {
         const teams = data.teams;
 
         TeamStorage.setTeams(teams);
+        PeopleStorage.setPeople(data.people)
 
         this.setState({
-          teams: JSON.parse(TeamStorage.getTeams())
+          teams: JSON.parse(TeamStorage.getTeams()),
+          people: JSON.parse(PeopleStorage.getPeople())
         });
       });
   }
@@ -141,14 +143,11 @@ class App extends Component {
   };
 
   updateTeamMembers = (teamIndex, members) => {
-    this.setState(
-      (prev) => {
-        const teams = [...prev.teams];
-        teams[teamIndex].members = members;
-        return { teams };
-      },
-      () => TeamStorage.setTeam(this.state.teams)
-    );
+    const teams = [...this.state.teams];
+    const editedTeam = teams[teamIndex];
+    editedTeam.members = members;
+    console.log(editedTeam)
+    this.updateTeam(teamIndex, editedTeam);
   };
 
   addPerson = (person) => {
