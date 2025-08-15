@@ -60,21 +60,19 @@ class History extends Component {
 
   const { startDate, endDate } = getDateRange();
 
-  // Determine scaling based on number of rows
-  const totalRows = teams.reduce((acc, team) => acc + Math.max(team.members.length, 5) + 2, 0); // +2 for headers & totals
+  const totalRows = teams.reduce((acc, team) => acc + Math.max(team.members.length, 5) + 2, 0);
   let fontSize = 12;
   let cellPadding = 6;
 
   if (totalRows > 25) {
     fontSize = 10;
     cellPadding = 4;
-  } 
+  }
   if (totalRows > 40) {
     fontSize = 8;
     cellPadding = 3;
   }
 
-  // Create container for report HTML
   const container = document.createElement('div');
   container.style.fontFamily = 'Arial, sans-serif';
   container.style.padding = '15px';
@@ -114,15 +112,15 @@ class History extends Component {
         <tbody>`;
 
     Object.entries(teamSales)
-  .sort((a, b) => b[1] - a[1])
-  .forEach(([person, sales]) => {
-      const isTop = topSalespeople.includes(person);
-      html += `<tr style="font-weight: ${isTop ? 'bold' : 'normal'}; background-color: ${isTop ? '#EB0A1E' : 'inherit'}; color: ${isTop ? 'white' : 'inherit'};">
-        <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:left;">${person}${isTop ? ' - Top salesperson' : ''}</td>
-        <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:right;">${sales}</td>
-      </tr>`;
-      teamTotal += sales;
-    });
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([person, sales]) => {
+        const isTop = topSalespeople.includes(person);
+        html += `<tr style="font-weight: ${isTop ? 'bold' : 'normal'}; background-color: ${isTop ? '#EB0A1E' : 'inherit'}; color: ${isTop ? 'white' : 'inherit'};">
+          <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:left;">${person}${isTop ? ' - Top salesperson' : ''}</td>
+          <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:right;">${sales}</td>
+        </tr>`;
+        teamTotal += sales;
+      });
 
     html += `<tr style="font-weight:bold;">
       <td style="border:1px solid #ccc; padding:${cellPadding}px;text-align:left;">Total</td>
@@ -144,7 +142,6 @@ class History extends Component {
     html2pdf.default().from(container).set(opt).save();
   });
 };
-
 
 
   getTodayDate() {
