@@ -70,7 +70,7 @@ class App extends Component {
 
   componentDidMount(){
     FetchData.getData()
-      .then( data => {console.log(data)
+      .then( data => {
         const teams = data.teams;
 
         TeamStorage.setTeams(teams);
@@ -90,7 +90,6 @@ class App extends Component {
   addTeam = (team) => {
     FetchTeams.createTeam(team)
       .then( createdTeam => {
-        console.log(createdTeam)
         this.setState(
           (prev) => ({ teams: [...prev.teams, createdTeam] }),
           () => TeamStorage.setTeams(this.state.teams)
@@ -101,15 +100,12 @@ class App extends Component {
 
   removeTeam = (teamIndex) => {
   const teamToRemove = this.state.teams[teamIndex];
-  console.log(teamToRemove)
 
   FetchTeams.deleteTeamById(teamToRemove.id)
     .then((deletedTeam) => {
-      console.log(deletedTeam)
       this.setState(
         (prev) => ({
           teams: prev.teams.filter((t) => {
-            console.log(t)
             return t.id !== deletedTeam.id
           })
         }),
@@ -145,8 +141,9 @@ class App extends Component {
   updateTeamMembers = (teamIndex, members) => {
     const teams = [...this.state.teams];
     const editedTeam = teams[teamIndex];
+
     editedTeam.members = members;
-    console.log(editedTeam)
+
     this.updateTeam(teamIndex, editedTeam);
   };
 
