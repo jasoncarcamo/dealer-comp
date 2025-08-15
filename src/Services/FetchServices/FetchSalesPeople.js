@@ -36,8 +36,7 @@ const FetchSalesPeople = {
         return fetch(`${url}/api/salespeople`, {
             method: "POST",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             },
             body: JSON.stringify(newSalesPerson)
         })
@@ -66,12 +65,11 @@ const FetchSalesPeople = {
                 return res.json();
             });
     },
-    deleteSalesPerson(token, id){
+    deleteSalesPersonById(token, id){
         return fetch(`${url}/api/salespeople/${id}`, {
-            method: "POST",
+            method: "DELETE",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             }
         })
             .then( res => {

@@ -18,6 +18,7 @@ import FetchData from './Services/FetchServices/FetchData';
 import PeopleStorage from './Services/StorageService/PeopleStorage';
 import SalesStorage from './Services/StorageService/SalesStorage';
 import TeamStorage from './Services/StorageService/TeamStorage';
+import FetchSalesPeople from './Services/FetchServices/FetchSalesPeople';
 
 // Helper component to bridge hooks with class component
 function TabsRouterWrapper({ onTabChange }) {
@@ -68,7 +69,7 @@ class App extends Component {
 
   componentDidMount(){
     FetchData.getData()
-      .then( data => {
+      .then( data => {console.log(data)
       });
   }
 
@@ -117,28 +118,47 @@ class App extends Component {
   };
 
   addPerson = (person) => {
-    this.setState(
-      (prev) => ({ people: [...prev.people, person] }),
-      () => PeopleStorage.setPeople(this.state.people)
-    );
+    const newPerson = {
+      name: person.name,
+      cars_sold: person.carsSold
+    }; 
+
+    FetchSalesPeople.createSalesPerson("", newPerson)
+      .then( createdPerson => {
+        
+        this.setState(
+          (prev) => ({ people: [...prev.people, createdPerson] }),
+          () => PeopleStorage.setPeople(this.state.people)
+        );
+      })
+      .catch( err => {
+        console.Consolelog(err)
+      })
   };
 
   removePerson = (personIndex) => {
-    this.setState(
-      (prev) => {
-        const people = [...prev.people];
-        const removedPerson = people.splice(personIndex, 1)[0];
-        const teams = prev.teams.map((team) => ({
-          ...team,
-          members: team.members.filter((m) => m !== removedPerson.name),
-        }));
-        return { people, teams };
-      },
-      () => {
-        PeopleStorage.setPeople(this.state.people);
-        TeamStorage.setTeam(this.state.teams);
-      }
-    );
+    const person = this.state.people[personIndex];
+
+    FetchSalesPeople.deleteSalesPersonById("", person.id)
+      .then( deletedPerson => {
+
+        this.setState(
+          (prev) => {
+            const people = [...prev.people];
+            const removedPerson = people.splice(personIndex, 1)[0];
+            const teams = prev.teams.map((team) => ({
+              ...team,
+              members: team.members.filter((m) => m !== removedPerson.name === deletedPerson.name),
+            }));
+            return { people, teams };
+          },
+          () => {
+            PeopleStorage.setPeople(this.state.people);
+            TeamStorage.setTeam(this.state.teams);
+          }
+        );
+      })
+      .catch( err => console.log(err))
   };
 
   updateSalesData = (newSalesData) => {
