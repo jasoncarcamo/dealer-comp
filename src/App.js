@@ -127,7 +127,7 @@ class App extends Component {
 
     FetchTeams.updateTeamById(editedTeam, editedTeam.id)
       .then( patchedTeam => {
-        
+
         teams[index] = editedTeam;
         
         this.setState(
@@ -188,7 +188,7 @@ class App extends Component {
           },
           () => {
             PeopleStorage.setPeople(this.state.people);
-            TeamStorage.setTeam(this.state.teams);
+            TeamStorage.setTeams(this.state.teams);
           }
         );
       })
