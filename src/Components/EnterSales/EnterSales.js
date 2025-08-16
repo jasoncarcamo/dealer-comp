@@ -114,7 +114,7 @@ class EnterSales extends Component {
                     <TableCell align="right">
                       <TextField
                         type="number"
-                        value={salesInputs[person.name]}
+                        value={salesInputs[person.name] || ""}
                         onChange={(e) => this.handleSalesChange(person.name, e.target.value)}
                         size="small"
                         inputProps={{

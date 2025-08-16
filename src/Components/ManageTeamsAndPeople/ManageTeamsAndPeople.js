@@ -241,14 +241,20 @@ class ManageTeamsAndPeople extends Component {
     const getCarsSold = (personName) => {
       const salesData = this.props.salesData;
       let sellsCount = 0;
+      console.log(salesData)
+
       for (const sale of salesData) {
+        console.log(sale)
         for (const [key, value] of Object.entries(sale)) {
+          console.log(key, sale[key])
           if (personName === key) {
             const date = new Date();
             const currentMonth = date.getMonth();
             const sellDate = new Date(sale.date);
+            console.log(currentMonth, sellDate.getMonth())
             if (sellDate.getMonth() === currentMonth) {
-              sellsCount += value;
+              sellsCount += Number(sale[key]);
+              console.log(sellsCount);
             }
           }
         }
