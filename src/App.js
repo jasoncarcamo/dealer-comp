@@ -88,6 +88,7 @@ class App extends Component {
   };
 
   addTeam = (team) => {
+    console.log(team)
     FetchTeams.createTeam(team)
       .then( createdTeam => {
         this.setState(
@@ -150,7 +151,8 @@ class App extends Component {
   addPerson = (person) => {
     const newPerson = {
       name: person.name,
-      cars_sold: person.carsSold
+      cars_sold: person.carsSold,
+      date: person.date
     }; 
 
     FetchSalesPeople.createSalesPerson("", newPerson)
@@ -192,6 +194,7 @@ class App extends Component {
   };
 
   updateSalesData = (newSalesData) => {
+    console.log(newSalesData)
     this.setState({ salesData: newSalesData }, () => {
       SalesStorage.setSale(this.state.salesData);
     });

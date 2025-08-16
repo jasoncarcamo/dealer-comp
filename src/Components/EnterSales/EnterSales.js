@@ -66,9 +66,13 @@ class EnterSales extends Component {
     const { date, salesInputs } = this.state;
     let { salesData } = this.props;
     salesData = salesData.filter((d) => d.date !== date);
-    const newEntry = { date, ...salesInputs };
-    salesData.push(newEntry);
+    const newSale = { date, ...salesInputs };
+
+    console.log(newSale, salesInputs)
+
+    salesData.push(newSale);
     salesData.sort((a, b) => (a.date > b.date ? 1 : -1));
+
     this.props.updateSalesData(salesData);
     this.setState({ originalSalesInputs: salesInputs, confirmOpen: false });
     alert('Sales saved!');
