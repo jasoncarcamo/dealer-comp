@@ -74,6 +74,7 @@ class EnterSales extends Component {
     salesData.sort((a, b) => (a.date > b.date ? 1 : -1));
 
     this.props.updateSalesData(salesData);
+    
     this.setState({ originalSalesInputs: salesInputs, confirmOpen: false });
     alert('Sales saved!');
   };

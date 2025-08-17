@@ -86,7 +86,15 @@ class CompetitionAndCharts extends Component {
   }
 
   generateColors(count) {
-    const baseColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1', '#a4de6c', '#d0ed57', '#888888'];
+    const baseColors = [
+  '#4B79A1', // muted blue
+  '#6C9A8B', // soft green
+  '#D4A373', // warm tan
+  '#7DA6C1', // steel blue
+  '#92A78C', // sage green
+  '#C7C98E', // soft yellow-green
+  '#6E6E6E', // gray
+];;
     return Array.from({ length: count }, (_, i) => baseColors[i % baseColors.length]);
   }
 
@@ -317,7 +325,7 @@ class CompetitionAndCharts extends Component {
                         type="monotone"
                         dataKey={member}
                         stroke={colors[idx]}
-                        dot={false}
+                        dot={true}
                         strokeWidth={2}
                       />
                     ))}

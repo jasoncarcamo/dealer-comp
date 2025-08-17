@@ -582,6 +582,11 @@ html += `</body></html>`;
                           {teamTotal}
                         </TableCell>
                       </TableRow>
+
+                      {/* Spacer row for gap */}
+                      <TableRow>
+                        <TableCell colSpan={2} sx={{ padding: 0, height: 25, backgroundColor: 'transparent' }} />
+                      </TableRow>
                     </React.Fragment>
                   );
                 })
