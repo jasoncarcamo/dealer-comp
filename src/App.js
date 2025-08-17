@@ -72,6 +72,7 @@ class App extends Component {
     FetchData.getData()
       .then( data => {
         const teams = data.teams;
+        console.log(data)
 
         TeamStorage.setTeams(teams);
         PeopleStorage.setPeople(data.people)

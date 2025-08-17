@@ -264,6 +264,23 @@ class ManageTeamsAndPeople extends Component {
       return sellsCount;
     };
 
+    const getUnassignedCarsSold = (person)=>{
+      const personCarsSold = this.props.salesData;
+      let salesCount = 0;
+
+      for(const saleIndex in personCarsSold){
+        const sale = personCarsSold[saleIndex];
+        if(sale.hasOwnProperty(person.name)){
+          console.log(sale)
+          salesCount = salesCount + sale[person.name];
+          console.log(salesCount)
+        };
+      };
+
+      console.log(personCarsSold.filter((sale)=> sale.hasOwnProperty(person.name)))
+      return salesCount;
+    }
+
     return (
       <Box
         sx={{
@@ -456,7 +473,7 @@ class ManageTeamsAndPeople extends Component {
                             }}
                           >
                             <span style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                              {person.name} ({person.carsSold || 0} cars sold)
+                              {person.name} ({getUnassignedCarsSold(person)} cars sold)
                             </span>
                             <Button
                               size="small"
