@@ -27,18 +27,10 @@ class ManageTeamsAndPeople extends Component {
     };
   }
 
-  onDragEnd = (result) => {
-    const { destination, source, draggableId } = result;
-    if (!destination) return;
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    )
-      return;
-
+  getPersonToTeamMap = () => {
     const { teams, people } = this.props;
-
     const personToTeam = {};
+
     teams.forEach((team, i) => {
       if (team.members) {
         team.members.forEach((m) => {
@@ -46,18 +38,34 @@ class ManageTeamsAndPeople extends Component {
         });
       }
     });
+
     people.forEach((p) => {
-      if (!personToTeam.hasOwnProperty(p.name)) personToTeam[p.name] = null;
+      if (!personToTeam.hasOwnProperty(p.name)) {
+        personToTeam[p.name] = null;
+      }
     });
 
+    return personToTeam;
+  };
+
+  onDragEnd = (result) => {
+    const { destination, source, draggableId } = result;
+    if (!destination) return;
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) return;
+
+    const { teams } = this.props;
+    const personToTeam = this.getPersonToTeamMap();
     const personName = draggableId;
 
-    const sourceIsTeam = source.droppableId.startsWith('team-');
-    const destIsTeam = destination.droppableId.startsWith('team-');
+    const sourceIsTeam = source.droppableId.startsWith("team-");
+    const destIsTeam = destination.droppableId.startsWith("team-");
 
     if (source.droppableId === destination.droppableId) {
       if (sourceIsTeam) {
-        const teamIndex = parseInt(source.droppableId.split('-')[1], 10);
+        const teamIndex = parseInt(source.droppableId.split("-")[1], 10);
         const team = teams[teamIndex];
         const newMembers = Array.from(team.members);
         newMembers.splice(source.index, 1);
@@ -72,11 +80,32 @@ class ManageTeamsAndPeople extends Component {
         this.props.updateTeamMembers(oldTeamIndex, newMembers);
       }
       if (destIsTeam) {
-        const newTeamIndex = parseInt(destination.droppableId.split('-')[1], 10);
+        const newTeamIndex = parseInt(destination.droppableId.split("-")[1], 10);
         const newTeam = teams[newTeamIndex];
         const newMembers = newTeam.members ? [...newTeam.members] : [];
         newMembers.splice(destination.index, 0, personName);
         this.props.updateTeamMembers(newTeamIndex, newMembers);
+      }
+    }
+  };
+
+  handleRemovePerson = (personName) => {
+    const personIndex = this.props.people.findIndex(p => p.name === personName);
+    if (personIndex === -1) return;
+
+    if (window.confirm(`Are you sure you want to remove salesperson "${personName}"?`)) {
+      const { teams } = this.props;
+      const personToTeam = this.getPersonToTeamMap();
+
+      // Remove from people
+      this.props.removePerson(personIndex);
+
+      // Remove from their team (if any)
+      if (personToTeam[personName] !== null) {
+        const teamIndex = personToTeam[personName];
+        const team = teams[teamIndex];
+        const newMembers = team.members.filter(m => m !== personName);
+        this.props.updateTeamMembers(teamIndex, newMembers);
       }
     }
   };
@@ -132,14 +161,14 @@ class ManageTeamsAndPeople extends Component {
     }
   };
 
-  handleRemovePerson = (personName) => {
+  /*handleRemovePerson = (personName) => {
     const personIndex = this.props.people.findIndex(p => p.name === personName);
     if (personIndex === -1) return;
 
     if (window.confirm(`Are you sure you want to remove salesperson "${personName}"?`)) {
       this.props.removePerson(personIndex);
     }
-  };
+  }*/
 
   startEditingTeam = (index, currentName, currentColor) => {
     this.setState({ editingTeamIndex: index, editingTeamName: currentName, editingTeamColor: currentColor });
@@ -278,20 +307,15 @@ class ManageTeamsAndPeople extends Component {
     const getCarsSold = (personName) => {
       const salesData = this.props.salesData;
       let sellsCount = 0;
-      console.log(salesData)
 
       for (const sale of salesData) {
-        console.log(sale)
         for (const [key, value] of Object.entries(sale)) {
-          console.log(key, sale[key])
           if (personName === key) {
             const date = new Date();
             const currentMonth = date.getMonth();
             const sellDate = new Date(sale.date);
-            console.log(currentMonth, sellDate.getMonth())
             if (sellDate.getMonth() === currentMonth) {
               sellsCount += Number(sale[key]);
-              console.log(sellsCount);
             }
           }
         }
@@ -306,13 +330,10 @@ class ManageTeamsAndPeople extends Component {
       for(const saleIndex in personCarsSold){
         const sale = personCarsSold[saleIndex];
         if(sale.hasOwnProperty(person.name)){
-          console.log(sale)
           salesCount = salesCount + sale[person.name];
-          console.log(salesCount)
         };
       };
 
-      console.log(personCarsSold.filter((sale)=> sale.hasOwnProperty(person.name)))
       return salesCount;
     }
 
