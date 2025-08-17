@@ -168,6 +168,33 @@ class ManageTeamsAndPeople extends Component {
     this.setState({ editingTeamIndex: null, editingTeamName: '', editingTeamColor: '#1976d2' });
   };
 
+  sortTeamNames = ()=>{
+      const teams = this.props.teams;
+      console.log(teams)
+      teams.sort((currentTeam, nextTeam)=> {
+        console.log(currentTeam)
+        if(currentTeam.name < nextTeam.name){
+          return -1;
+        }
+
+        if(currentTeam.name > nextTeam.name){
+          return 1;
+        };
+
+        return 0;
+      });
+  }
+
+  sortPeopleinMembers = ()=>{
+    const teams = this.props.teams;
+      console.log(teams)
+      for(const teamIndex in teams){
+        teams[teamIndex].members.sort()
+      }
+
+      console.log(teams)
+  }
+
   render() {
     const { teams, people } = this.props;
     const {
@@ -180,6 +207,8 @@ class ManageTeamsAndPeople extends Component {
       addingPerson,
       addPersonNameInput,
     } = this.state;
+
+    this.sortTeamNames();
 
     const assignedPeople = new Set();
     teams.forEach((team) => {
