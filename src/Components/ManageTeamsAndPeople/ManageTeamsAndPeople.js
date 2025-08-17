@@ -230,28 +230,34 @@ class ManageTeamsAndPeople extends Component {
       alignItems: 'center',
       overflowWrap: 'break-word',
       wordBreak: 'break-word',
-      ...draggableStyle,
+      ...draggableStyle
     });
 
     const getListStyle = (isDraggingOver) => ({
-      background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
-      padding: 6,
-      minHeight: 50,
-      maxHeight: 400,
-      borderRadius: 6,
-      border: '1px solid #EB0A1E',
-      display: 'grid',
-      gridTemplateColumns: {
-        xs: '1fr',
-        sm: 'repeat(2, 1fr)',
-        md: 'repeat(3, 1fr)',
-      },
-      gap: 0,
-      overflowY: 'auto',
-      overflowX: 'hidden',
-      scrollbarWidth: 'thin',
-      whiteSpace: 'normal',
-    });
+  background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
+  padding: 6,
+  minHeight: 50,
+  maxHeight: 400,
+  borderRadius: 6,
+  border: '1px solid #EB0A1E',
+  display: 'grid',
+  gridAutoRows: 'min-content',   // 👈 each row fits its content
+  gridTemplateColumns: { 
+    sm: 'repeat(2, 1fr)', 
+    md: 'repeat(3, 1fr)' 
+  },
+  gap: '2px',                    // 👈 tight consistent spacing
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  scrollbarWidth: 'thin',
+  whiteSpace: 'normal',
+
+  // 👇 mobile: single tight column
+  '@media (max-width: 600px)': {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+});
 
     const getTeamListStyle = (isDraggingOver) => ({
       background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
@@ -475,7 +481,7 @@ class ManageTeamsAndPeople extends Component {
                       ...getListStyle(snapshot.isDraggingOver),
                       overflowX: 'hidden',
                       maxWidth: '100%',
-                      minHeight: "350px",
+                      minHeight: "400px",
                       boxSizing: 'border-box',
                       marginBottom: 0,
                       paddingTop: "20px !important",
