@@ -72,7 +72,6 @@ class App extends Component {
     FetchData.getData()
       .then( data => {
         const teams = data.teams;
-        console.log(data)
 
         TeamStorage.setTeams(teams);
         PeopleStorage.setPeople(data.people)
@@ -89,7 +88,6 @@ class App extends Component {
   };
 
   addTeam = (team) => {
-    console.log(team)
     FetchTeams.createTeam(team)
       .then( createdTeam => {
         this.setState(
@@ -195,7 +193,6 @@ class App extends Component {
   };
 
   updateSalesData = (newSalesData) => {
-    console.log(newSalesData)
     this.setState({ salesData: newSalesData }, () => {
       SalesStorage.setSale(this.state.salesData);
     });

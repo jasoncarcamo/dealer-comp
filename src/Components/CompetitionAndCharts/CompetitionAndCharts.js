@@ -246,7 +246,7 @@ class CompetitionAndCharts extends Component {
         <Typography variant="h5" gutterBottom>Team Sales ({currentMonthYear})</Typography>
 
         <Box sx={{ mb: 4 }}>
-          {teams.map((team) => (
+          {teams.sort((a, b) => a.name.localeCompare(b.name)).filter((team) => new Date(team.date).getMonth() === new Date().getMonth() ? team : "").map((team) => (
             <Paper key={team.name} sx={{ mb: 2, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}>
               <Typography variant="h6" sx={{ color: team.color }}>
                 {team.name} — Total Sales: {teamTotals[team.name] || 0}

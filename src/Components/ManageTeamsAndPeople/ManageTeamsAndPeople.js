@@ -199,9 +199,7 @@ class ManageTeamsAndPeople extends Component {
 
   sortTeamNames = ()=>{
       const teams = this.props.teams;
-      console.log(teams)
       teams.sort((currentTeam, nextTeam)=> {
-        console.log(currentTeam)
         if(currentTeam.name < nextTeam.name){
           return -1;
         }
@@ -216,12 +214,9 @@ class ManageTeamsAndPeople extends Component {
 
   sortPeopleinMembers = ()=>{
     const teams = this.props.teams;
-      console.log(teams)
       for(const teamIndex in teams){
         teams[teamIndex].members.sort()
-      }
-
-      console.log(teams)
+      };
   }
 
   render() {

@@ -269,29 +269,32 @@ class History extends Component {
   }
 
   aggregateByMonth() {
-    const { salesData, teams } = this.props;
-    if (!Array.isArray(salesData) || !Array.isArray(teams)) return [];
+  const { salesData, teams } = this.props;
+  if (!Array.isArray(salesData) || !Array.isArray(teams)) return [];
 
-    const monthly = {};
-    salesData.forEach((dayEntry) => {
-      let month = dayEntry.date.slice(0, 7); // YYYY-MM
-      if (!monthly[month]) {
-        monthly[month] = {};
-        teams.forEach((team) => {
-          monthly[month][team.name] = 0;
-        });
-      }
-      const salespersonTotals = this.getSalespersonTotals(new Date(dayEntry.date).getMonth());
-      const teamTotals = this.getTeamTotals(salespersonTotals);
-      teams.forEach((team) => {
-        monthly[month][team.name] = teamTotals[team.name] || 0;
-      });
-    });
+  const monthly = {};
 
-    return Object.entries(monthly)
-      .map(([month, totals]) => ({ month, totals }))
-      .sort((a, b) => (a.month > b.month ? 1 : -1));
-  }
+  teams.forEach(team => {
+    const month = team.date.slice(0, 7); // YYYY-MM from team.date
+    if (!monthly[month]) monthly[month] = {};
+
+    // Sum sales for this team for that month
+    const teamTotal = (team.members || []).reduce((sum, member) => {
+      const memberSales = salesData
+        .filter(entry => entry.date.slice(0, 7) === month)
+        .reduce((acc, entry) => acc + (entry[member] || 0), 0);
+      return sum + memberSales;
+    }, 0);
+
+    monthly[month][team.name] = teamTotal;
+  });
+
+  // Convert to array and sort by month
+  return Object.entries(monthly)
+    .map(([month, totals]) => ({ month, totals }))
+    .sort((a, b) => (a.month < b.month ? 1 : -1));
+}
+
 
   getMonthlySalesByMember() {
     const { teams, salesData } = this.props;
@@ -354,7 +357,8 @@ class History extends Component {
     } else if (viewMode === 'month') {
       startDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
       endDate = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
-    }
+    };
+
     return { startDate, endDate };
   };
 
@@ -475,6 +479,9 @@ html += `</body></html>`;
     const salespersonTotals = this.getSalespersonTotals();
     const teamTotals = this.getTeamTotals(salespersonTotals);
     const monthlyMemberSales = this.getMonthlySalesByMember();
+    const filteredTeams = this.props.teams.filter(
+      team => new Date(team.date).getMonth() === new Date(this.state.selectedDate).getMonth()
+    );
 
     if (!Array.isArray(teams) || teams.length === 0) {
       return <Typography>No teams to show history for.</Typography>;
@@ -531,7 +538,7 @@ html += `</body></html>`;
           </TableHead>
           <TableBody>
             {teams && teams.length > 0 ? (
-              teams.map((team) => {
+              filteredTeams.map((team) => {
                 const teamSales = {};
                 team.members.forEach((member) => {
                   teamSales[member] = salesForPeriod[member] || 0;
@@ -643,45 +650,45 @@ html += `</body></html>`;
         })}
       </Box>
 
-    {/* Desktop Table */}
-    <Box sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>
-      <TableContainer component={Paper} sx={{ minWidth: 600 }}>
-        <Table stickyHeader size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Month</TableCell>
-              {teams.map((team) => (
-                <TableCell key={team.name} align="right">{team.name}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {this.aggregateByMonth().map(({ month, totals }) => {
-              const maxSales = Math.max(...Object.values(totals));
-              return (
-                <TableRow key={month}>
-                  <TableCell>{month}</TableCell>
-                  {teams.map((team) => {
-                    const isMax = totals[team.name] === maxSales;
-                    const members = team.members || [];
-                    return (
-                      <Tooltip
-                        key={team.name}
-                        title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
-                        arrow
-                      >
-                        <TableCell
-                          align="right"
-                          sx={{ fontWeight: isMax ? 'bold' : 'normal', cursor: 'pointer', minWidth: 80 }}
+      {/* Desktop Table */}
+      <Box sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>
+        <TableContainer component={Paper} sx={{ minWidth: 600 }}>
+          <Table stickyHeader size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Month</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {this.aggregateByMonth().sort((a, b) => (a.month > b.month ? 1 : -1)).map(({ month, totals }) => {
+                const teamsForMonth = teams.filter(team => team.date.slice(0, 7) === month);
+                const maxSales = Math.max(...Object.values(totals));
+
+                return (
+                  <TableRow key={month}>
+                    <TableCell>{month}</TableCell>
+                    {teamsForMonth.map(team => {
+                      const isMax = totals[team.name] === maxSales;
+                      const members = team.members || [];
+                      return (
+                        <Tooltip
+                          key={team.name}
+                          title={`${team.name} - Members: ${members.map(m => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(',qwewq ')}`}
+                          arrow
                         >
-                          {totals[team.name] || 0}
-                        </TableCell>
-                      </Tooltip>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
+                          <TableCell
+                            align="right"
+                            sx={{ fontWeight: isMax ? 'bold' : 'normal', cursor: 'pointer', minWidth: 80 }}
+                          >
+                            {totals[team.name] || 0}
+                          </TableCell>
+                        </Tooltip>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
+
           </TableBody>
         </Table>
       </TableContainer>

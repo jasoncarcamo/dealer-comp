@@ -68,8 +68,6 @@ class EnterSales extends Component {
     salesData = salesData.filter((d) => d.date !== date);
     const newSale = { date, ...salesInputs };
 
-    console.log(newSale, salesInputs)
-
     salesData.push(newSale);
     salesData.sort((a, b) => (a.date > b.date ? 1 : -1));
 
