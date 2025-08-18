@@ -233,7 +233,7 @@ class ManageTeamsAndPeople extends Component {
       } = this.state;
     const filteredTeams = teams.filter(
       team => new Date(team.date).getMonth() === new Date().getMonth()
-    );  console.log(teams)
+    ); 
 
     this.sortTeamNames();
 

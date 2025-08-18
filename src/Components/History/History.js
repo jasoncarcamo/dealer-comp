@@ -488,7 +488,6 @@ html += `</body></html>`;
     );
 
     filteredTeam = filteredTeam.sort((a, b) => {
-      console.log(a.name)
       if(a.name < b.name){
         return 1;
       }
@@ -499,8 +498,6 @@ html += `</body></html>`;
 
       return 0;
     });
-
-    console.log(filteredTeam)
 
     if (!Array.isArray(teams) || teams.length === 0) {
       return <Typography>No teams to show history for.</Typography>;
@@ -569,7 +566,7 @@ html += `</body></html>`;
                 return 0;
               }).map((team) => {
                 const teamSales = {};
-                console.log(teams)
+
                 team.members.forEach((member) => {
                   teamSales[member] = salesForPeriod[member] || 0;
                 });
@@ -705,10 +702,8 @@ html += `</body></html>`;
                 let teamTotal = {};
 
                 filteredSales.forEach((team) => {
-                  console.log(team)
                   team.members.forEach(member => {
                     teamSales[member] = salesForPeriod[member] || 0;
-                    console.log(teamSales[member])
                     teamTotal[team.name] = teamSales[member] || 0 + Number(salesForPeriod[member]);
                   })
                 });
