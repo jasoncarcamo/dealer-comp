@@ -1,4 +1,4 @@
-const url =  "https://localhost:8000"
+const url =  "http://localhost:8000"
 
 const FetchSales = {
     getAllSales(){
@@ -16,7 +16,7 @@ const FetchSales = {
                 return res.json();
             });
     },
-    getSalesById(id){
+    getSaleById(id){
         return fetch(`${url}/api/sales/${id}`, {
             method: "GET",
             headers: {
@@ -32,14 +32,13 @@ const FetchSales = {
                 return res.json();
             });
     },
-    createSalesPerson(token, newSalesPerson){
+    createSale(newSale){
         return fetch(`${url}/api/sales`, {
             method: "POST",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             },
-            body: JSON.stringify(newSalesPerson)
+            body: JSON.stringify(newSale)
         })
             .then( res => {
                 if(!res){
@@ -49,12 +48,11 @@ const FetchSales = {
                 return res.json();
             });
     },
-    updateSalesPersonById(token, updatedSalesPerson, id){
+    updateSaleById(updatedSalesPerson, id){
         return fetch(`${url}/api/sales/${id}`, {
             method: "POST",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             },
             body: JSON.stringify(updatedSalesPerson)
         })
@@ -66,12 +64,11 @@ const FetchSales = {
                 return res.json();
             });
     },
-    deleteSalesPerson(token, id){
+    deleteSaleById(id){
         return fetch(`${url}/api/sales/${id}`, {
             method: "POST",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             }
         })
             .then( res => {

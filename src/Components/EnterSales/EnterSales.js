@@ -33,17 +33,21 @@ class EnterSales extends Component {
 
   getTodayDate() {
     return new Date().toISOString().split('T')[0];
-  }
+  };
 
   loadSalesForDate(date) {
     const { salesData, people } = this.props;
-    const entry = salesData.find((d) => d.date === date);
+    const entry = salesData.find((d) => 
+      new Date(d.date).toISOString().split('T')[0] === date
+    );
+
     const salesInputs = {};
     people.forEach((p) => {
       salesInputs[p.name] = entry ? entry[p.name] || 0 : 0;
     });
-    this.setState({ salesInputs, originalSalesInputs: salesInputs });
-  }
+
+    this.setState({ salesInputs, originalSalesInputs: { ...salesInputs } });
+  };
 
   handleDateChange = (e) => {
     const date = e.target.value;
@@ -71,7 +75,7 @@ class EnterSales extends Component {
     salesData.push(newSale);
     salesData.sort((a, b) => (a.date > b.date ? 1 : -1));
 
-    this.props.updateSalesData(salesData);
+    this.props.updateSalesData(salesData, newSale);
     
     this.setState({ originalSalesInputs: salesInputs, confirmOpen: false });
     alert('Sales saved!');
