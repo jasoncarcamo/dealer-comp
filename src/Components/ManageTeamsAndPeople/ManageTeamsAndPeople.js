@@ -230,7 +230,10 @@ class ManageTeamsAndPeople extends Component {
       addTeamColorInput,
       addingPerson,
       addPersonNameInput,
-    } = this.state;
+      } = this.state;
+    const filteredTeams = teams.filter(
+      team => new Date(team.date).getMonth() === new Date().getMonth()
+    );  console.log(teams)
 
     this.sortTeamNames();
 
@@ -568,7 +571,7 @@ class ManageTeamsAndPeople extends Component {
                 {teams.length === 0 && (
                   <Typography sx={{ gridColumn: '1 / -1', textAlign: 'center' }}>No teams added yet</Typography>
                 )}
-                {teams.map((team, index) => (
+                {filteredTeams.map((team, index) => (
                   <Droppable key={team.name} droppableId={`team-${index}`} direction="vertical">
                     {(provided, snapshot) => (
                       <Paper

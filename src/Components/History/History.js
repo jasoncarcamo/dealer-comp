@@ -241,6 +241,10 @@ class History extends Component {
     const filteredData = this.filterSalesDataForCurrentMonth(month);
     const totals = {};
     const allMembers = new Set();
+    const filteredTeams = this.props.teams.filter(
+      team => new Date(team.date).getMonth() === new Date().getMonth()
+    );
+
     teams.forEach((team) => {
       if (team.members) team.members.forEach((m) => allMembers.add(m));
     });
@@ -398,11 +402,11 @@ let cellPadding = 8;
 if (totalRows > 25) {
   fontSize = 10;
   cellPadding = 6;
-} 
+} ;
 if (totalRows > 40) {
   fontSize = 8;
   cellPadding = 4;
-}
+};
 
 let html = `
 <html>
@@ -479,9 +483,24 @@ html += `</body></html>`;
     const salespersonTotals = this.getSalespersonTotals();
     const teamTotals = this.getTeamTotals(salespersonTotals);
     const monthlyMemberSales = this.getMonthlySalesByMember();
-    const filteredTeams = this.props.teams.filter(
+    let filteredTeam = this.props.teams.filter(
       team => new Date(team.date).getMonth() === new Date(this.state.selectedDate).getMonth()
     );
+
+    filteredTeam = filteredTeam.sort((a, b) => {
+      console.log(a.name)
+      if(a.name < b.name){
+        return 1;
+      }
+
+      if(a.name > b.name){
+        return -1;
+      }
+
+      return 0;
+    });
+
+    console.log(filteredTeam)
 
     if (!Array.isArray(teams) || teams.length === 0) {
       return <Typography>No teams to show history for.</Typography>;
@@ -538,8 +557,19 @@ html += `</body></html>`;
           </TableHead>
           <TableBody>
             {teams && teams.length > 0 ? (
-              filteredTeams.map((team) => {
+              filteredTeam.sort((a, b) => {
+                if(a.name > b.name){
+                  return 1;
+                }
+
+                if(a.name < b.name){
+                  return -1;
+                }
+
+                return 0;
+              }).map((team) => {
                 const teamSales = {};
+                console.log(teams)
                 team.members.forEach((member) => {
                   teamSales[member] = salesForPeriod[member] || 0;
                 });
@@ -565,8 +595,7 @@ html += `</body></html>`;
                         {team.name}{`${isTopTeam ? " - Winner" : ""}`}
                       </TableCell>
                     </TableRow>
-                    {Object.entries(teamSales)
-                      .sort((a, b) => b[1] - a[1]) // sort descending by sales
+                    {Object.entries(teamSales)// sort descending by sales
                       .map(([person, sales]) => (
                         <TableRow
                           key={person}
@@ -662,8 +691,29 @@ html += `</body></html>`;
             <TableBody>
               {this.aggregateByMonth().sort((a, b) => (a.month > b.month ? 1 : -1)).map(({ month, totals }) => {
                 const teamsForMonth = teams.filter(team => team.date.slice(0, 7) === month);
-                const maxSales = Math.max(...Object.values(totals));
+                const filteredSales = teamsForMonth.sort((a, b) => {
+                  if(a.name > b.name){
+                    return 1;
+                  };
 
+                  if(a.name < b.name){
+                    return -1;
+                  }; return 0;
+                })
+                const maxSales = Math.max(...Object.values(totals));
+                const teamSales = {};
+                let teamTotal = {};
+
+                filteredSales.forEach((team) => {
+                  console.log(team)
+                  team.members.forEach(member => {
+                    teamSales[member] = salesForPeriod[member] || 0;
+                    console.log(teamSales[member])
+                    teamTotal[team.name] = teamSales[member] || 0 + Number(salesForPeriod[member]);
+                  })
+                });
+                
+                console.log(teamTotal)
                 return (
                   <TableRow key={month}>
                     <TableCell>{month}</TableCell>
@@ -673,7 +723,10 @@ html += `</body></html>`;
                       return (
                         <Tooltip
                           key={team.name}
-                          title={`${team.name} - Members: ${members.map(m => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(',qwewq ')}`}
+                          title={`${team.name} - Members: ${members.map(m => {
+
+                            return `${m} (${teamSales[m] || 0})`;
+                          }).join(', ')}`}
                           arrow
                         >
                           <TableCell

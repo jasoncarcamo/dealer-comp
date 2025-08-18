@@ -227,6 +227,8 @@ class CompetitionAndCharts extends Component {
     const now = new Date();
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+    const filteredTeams = teams.filter(
+      team => new Date(team.date).getMonth() === new Date().getMonth());
 
     if (!teams.length) {
       return <Typography>No teams available. Please add teams first.</Typography>;
@@ -235,7 +237,7 @@ class CompetitionAndCharts extends Component {
       return <Typography>No sales data available for {currentMonthYear}.</Typography>;
     }
 
-    const barData = teams.map((team) => ({
+    const barData = filteredTeams.map((team) => ({
       team: team.name,
       totalSales: teamTotals[team.name] || 0,
       color: team.color || '#8884d8',
