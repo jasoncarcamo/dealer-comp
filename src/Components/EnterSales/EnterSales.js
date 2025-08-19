@@ -41,10 +41,25 @@ class EnterSales extends Component {
       new Date(d.date).toISOString().split('T')[0] === date
     );
 
+    console.log(entry)
+
     const salesInputs = {};
     people.forEach((p) => {
       salesInputs[p.name] = entry ? entry[p.name] || 0 : 0;
     });
+
+    if(!entry){
+      this.setState({ salesInputs: {}, originalSalesInputs: {} });
+      return;
+    }
+
+    if(entry.id){
+      salesInputs.id = entry.id;
+    }
+
+    if(entry.date){
+      salesInputs.date = entry.date;
+    }
 
     this.setState({ salesInputs, originalSalesInputs: { ...salesInputs } });
   };
@@ -71,8 +86,11 @@ class EnterSales extends Component {
     let { salesData } = this.props;
     salesData = salesData.filter((d) => d.date !== date);
     const newSale = { date, ...salesInputs };
+    console.log(newSale)
+    if(!newSale.hasOwnProperty("id")){
+      salesData.push(newSale);
+    };
 
-    salesData.push(newSale);
     salesData.sort((a, b) => (a.date > b.date ? 1 : -1));
 
     this.props.updateSalesData(salesData, newSale);
@@ -91,6 +109,8 @@ class EnterSales extends Component {
   render() {
     const { people } = this.props;
     const { date, salesInputs, confirmOpen } = this.state;
+
+    console.log(salesInputs)
 
     return (
       <div>

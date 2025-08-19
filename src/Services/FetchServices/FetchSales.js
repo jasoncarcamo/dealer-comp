@@ -48,13 +48,13 @@ const FetchSales = {
                 return res.json();
             });
     },
-    updateSaleById(updatedSalesPerson, id){
+    updateSaleById(updatedSale, id){
         return fetch(`${url}/api/sales/${id}`, {
-            method: "POST",
+            method: "PATCH",
             headers: {
                 'content-type': "application/json"
             },
-            body: JSON.stringify(updatedSalesPerson)
+            body: JSON.stringify(updatedSale)
         })
             .then( res => {
                 if(!res){

@@ -223,23 +223,57 @@ class App extends Component {
     const newSale = {
       date: sale.date,
       sales: []
-    }
-
+    };
+    
     for(const [key, value] of Object.entries(sale)){
       if(key !== "date"){
-        newSale.sales.push({[key]: value});
+        if(key !== "id"){
+          newSale.sales.push({[key]: value});
+        }
       };
     };
     
-    FetchSales.createSale(newSale)
-      .then( createdSale => {
-        this.setState({ salesData: newSalesData }, () => {
-          SalesStorage.setSale(this.state.salesData);
+    if(!sale.id){
+      console.log("Creating")
+      FetchSales.createSale(newSale)
+        .then( createdSale => {
+          newSalesData.forEach((newSale, i) => {
+            console.log(newSale, sale, createdSale.createdSale)
+            if(new Date(newSale.date).getMonth() === new Date(createdSale.createdSale.date).getMonth() && newSale.id == sale.id){
+              console.log("Same time")
+              sale.id = createdSale.createdSale.id;
+
+              newSale = sale;
+            }
+          });
+          this.setState({ salesData: newSalesData }, () => {
+            SalesStorage.setSale(this.state.salesData);
+          });
+        })
+        .catch( err => {
+          console.log(err);
         });
-      })
-      .catch( err => {
-        console.log(err);
-      });
+    } else{
+      console.log("Updating")
+      FetchSales.updateSaleById(newSale, sale.id)
+        .then( updatedSale => {
+          console.log(newSalesData)
+          newSalesData.forEach((newSale, i) => {
+            console.log(newSale, sale, updatedSale)
+            if( newSale.id === Number(updatedSale.id)){
+              console.log("found sale", newSale, updatedSale)
+
+              newSalesData[i] = sale;
+            };
+          });
+
+          console.log(newSalesData)
+          this.setState({ salesData: newSalesData }, () => {
+            SalesStorage.setSale(this.state.salesData);
+          });
+        })
+        .catch( err => console.log(err));
+    };
   };
 
   updateTeamNameAndColor = (teamId, newName, newColor) => {
