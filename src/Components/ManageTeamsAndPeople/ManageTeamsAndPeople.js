@@ -524,7 +524,7 @@ class ManageTeamsAndPeople extends Component {
                         variant="outlined"
                         color="error"
                         onClick={() => this.handleRemovePerson(person.name)}
-                        sx={{ minWidth: 28, padding: '2px 6px' }}
+                        sx={{ minWidth: 28, padding: '2px 6px', border: "none"}}
                       >
                         ×
                       </Button>
@@ -630,7 +630,7 @@ class ManageTeamsAndPeople extends Component {
                               variant="outlined"
                               color="error"
                               onClick={() => this.handleRemovePerson(memberName)}
-                              sx={{ minWidth: 28, padding: '2px 6px' }}
+                              sx={{ minWidth: 28, padding: '2px 6px', border: "none" }}
                             >
                               ×
                             </Button>
