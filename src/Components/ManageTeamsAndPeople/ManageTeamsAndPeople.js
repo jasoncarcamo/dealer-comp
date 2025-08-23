@@ -471,7 +471,7 @@ class ManageTeamsAndPeople extends Component {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      borderRadius: 4,
+                      borderRadius: 1,
                       backgroundColor: '#f9f9f9',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                       transition: 'background-color 0.2s ease',
@@ -503,20 +503,6 @@ class ManageTeamsAndPeople extends Component {
                           );
                         })}
                       </Select>
-
-                      {/* Unassign button */}
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="warning"
-                        onClick={() => {
-                          const currentTeam = teams.find((t) => t.members.includes(person.name));
-                          if (currentTeam) this.handleRemoveFromTeam(person.name, currentTeam.id);
-                        }}
-                        sx={{ minWidth: 28, padding: '2px 6px' }}
-                      >
-                        Unassign
-                      </Button>
 
                       {/* Remove person */}
                       <Button
@@ -578,7 +564,7 @@ class ManageTeamsAndPeople extends Component {
                             display: 'flex',
                             justifyContent: 'space-evenly',
                             alignItems: 'center',
-                            borderRadius: 4,
+                            borderRadius: 1,
                             backgroundColor: '#f9f9f9',
                             boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                             transition: 'background-color 0.2s ease',
