@@ -80,7 +80,17 @@ class History extends Component {
   container.innerHTML = `<h1 style="font-size:${fontSize + 4}px;">Sales Report (${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)})</h1>
     <p>Date range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>`;
 
-  teams.forEach((team) => {
+  teams.sort((a, b) => {
+    if(a.name > b.name){
+      return 1;
+    }
+
+    if(a.name < b.name){
+      return -1;
+    };
+
+    return 0;
+  }).forEach((team) => {
     const teamSales = {};
     team.members.forEach((m) => { teamSales[m] = 0; });
 
@@ -620,7 +630,17 @@ html += `</body></html>`;
                         {team.name}{`${isTopTeam ? " - Winner" : ""}`}
                       </TableCell>
                     </TableRow>
-                    {Object.entries(teamSales)// sort descending by sales
+                    {Object.entries(teamSales).sort(([,a], [,b]) => {
+                     if(a < b ){
+                      return 1;
+                     }
+
+                     if(a > b){
+                      return -1;
+                     }
+
+                     return 0;
+                    })// sort descending by sales
                       .map(([person, sales]) => (
                         <TableRow
                           key={person}
