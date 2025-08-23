@@ -5,6 +5,7 @@ import ManageTeamsAndPeople from './Components/ManageTeamsAndPeople/ManageTeamsA
 import EnterSales from './Components/EnterSales/EnterSales';
 import CompetitionAndCharts from './Components/CompetitionAndCharts/CompetitionAndCharts';
 import History from './Components/History/History';
+import FullScreenLoader from './Components/FullScreenLoader/FullScreenloader';
 import { Container, Paper } from '@mui/material';
 import {
   BrowserRouter as Router,
@@ -66,6 +67,7 @@ class App extends Component {
       teams: JSON.parse(TeamStorage.getTeams()) || [],
       people: JSON.parse(PeopleStorage.getPeople()) || [],
       salesData: JSON.parse(SalesStorage.getSales()) || [],
+      loadingData: true
     };
   }
 
@@ -73,14 +75,15 @@ class App extends Component {
     FetchData.getData()
       .then( data => {
         const teams = data.teams;
-        
+
         TeamStorage.setTeams(teams);
         PeopleStorage.setPeople(data.people)
         SalesStorage.setSale(this.handleSalesData(data.salesData));
 
         this.setState({
           teams: JSON.parse(TeamStorage.getTeams()),
-          people: JSON.parse(PeopleStorage.getPeople())
+          people: JSON.parse(PeopleStorage.getPeople()),
+          loadingData: false
         });
       });
   }
@@ -275,6 +278,7 @@ class App extends Component {
     return (
       <Router>
         <div>
+          {this.state.loadingData ? <FullScreenLoader/> : ""}
           <NavBar />
           <TabsRouterWrapper onTabChange={this.handleTabChange} />
           <Container sx={{ marginTop: 4, marginBottom: 4 }}>
