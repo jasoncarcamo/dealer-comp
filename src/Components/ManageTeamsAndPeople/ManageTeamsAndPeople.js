@@ -457,7 +457,7 @@ class ManageTeamsAndPeople extends Component {
             </Typography>
             <Box sx={{ ...getListStyle(false), minHeight: 100 }}>
               {unassignedPeople.length === 0 ? (
-                <Typography sx={{ textAlign: 'center', margin: "auto", position: "absolute", top: "50%", left: "50%",transform: "translate(-50%, -50%)" }}>No unassigned salespeople</Typography>
+                <Typography sx={{ textAlign: 'center', margin: "auto" }}>No unassigned salespeople</Typography>
               ) : (
                 unassignedPeople.map((person) => (
                   <Box
