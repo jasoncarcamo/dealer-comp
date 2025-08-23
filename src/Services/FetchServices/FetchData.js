@@ -1,4 +1,5 @@
-const url =  "http://localhost:8000"
+import config from "../../config";
+const url =  config.url
 
 const FetchData = {
     getData(){
