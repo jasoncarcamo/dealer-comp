@@ -307,7 +307,7 @@ class CompetitionAndCharts extends Component {
             const colors = this.generateColors(team.members.length);
             return (
               <Paper
-                key={team.name}
+                key={team.id}
                 sx={{ mb: 5, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}
                 aria-label={`Salesperson daily sales for team ${team.name}`}
               >

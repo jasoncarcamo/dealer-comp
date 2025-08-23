@@ -677,7 +677,7 @@ html += `</body></html>`;
                 const members = team.members || [];
                 return (
                   <Tooltip
-                    key={team.name}
+                    key={team.id}
                     title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
                     arrow
                   >
@@ -744,7 +744,7 @@ html += `</body></html>`;
                       const members = team.members || [];
                       return (
                         <Tooltip
-                          key={team.name}
+                          key={team.id}
                           title={`${team.name} - Members: ${members.map(m => {
 
                             return `${m} (${teamSales[m] || 0})`;

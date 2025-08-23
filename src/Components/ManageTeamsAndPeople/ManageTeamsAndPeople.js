@@ -20,7 +20,7 @@ class ManageTeamsAndPeople extends Component {
       newPersonName: '',
       editingTeamIndex: null,
       editingTeamName: '',
-      editingTeamColor: '#1976d2',
+      editingTeamColor: '',
       addingTeam: false,
       addingPerson: false,
       addTeamNameInput: '',
@@ -90,7 +90,6 @@ class ManageTeamsAndPeople extends Component {
 
     if (teamIndex === -1) return;
     for(const index in teams){
-      console.log(teams[teamIndex].members)
       if(teams[teamIndex].members.findIndex( member => member === teamId)){
       }
     }
@@ -100,12 +99,12 @@ class ManageTeamsAndPeople extends Component {
         const memberIndex = teams[i].members.findIndex(person => person === personName);
 
         if(memberIndex > -1){
-          console.log(teams[i].members.splice(memberIndex))
           this.handleRemoveFromTeam(personName, currentTeamId)
-        }
-      }
-    }
+        };
+      };
+    };
     const newMembers = [...(teams[teamIndex].members || []), personName];
+
     this.props.updateTeamMembers(teamIndex, newMembers);
   };
 
@@ -176,7 +175,7 @@ class ManageTeamsAndPeople extends Component {
     this.setState({ editingTeamIndex: null, editingTeamName: '', editingTeamColor: '#1976d2' });
   };
 
-  saveEditingTeam = () => {
+  saveEditingTeam = (currentTeam) => {
     const { editingTeamIndex, editingTeamName, editingTeamColor } = this.state;
     if (!editingTeamName.trim()) {
       alert('Team name cannot be empty.');
@@ -187,12 +186,11 @@ class ManageTeamsAndPeople extends Component {
         i !== editingTeamIndex &&
         team.name.toLowerCase() === editingTeamName.trim().toLowerCase()
     );
-    if (nameExists) {
-      alert('Another team with this name already exists.');
-      return;
-    }
-    this.props.updateTeam(editingTeamIndex, { name: editingTeamName.trim(), color: editingTeamColor });
-    this.setState({ editingTeamIndex: null, editingTeamName: '', editingTeamColor: '#1976d2' });
+
+    const teamIndex = this.props.teams.findIndex(team => team.id === currentTeam.id);
+    
+    this.props.updateTeam(teamIndex, { name: editingTeamName.trim(), color: editingTeamColor, members: currentTeam.members, date: currentTeam.date, id: currentTeam.id });
+    this.setState({ editingTeamIndex: null, editingTeamName: ''});
   };
 
   sortTeamNames = ()=>{
@@ -238,9 +236,6 @@ class ManageTeamsAndPeople extends Component {
       .filter(team => {
         const teamDate = new Date(team.date);
 
-        if(teamDate.getMonth() === currentMonth && teamDate.getFullYear() === currentYear){
-          console.log(team)
-        }
         return teamDate.getMonth() === currentMonth && teamDate.getFullYear() === currentYear;
       }).sort((a, b) => {
         if(a.name > b.name){
@@ -270,50 +265,6 @@ class ManageTeamsAndPeople extends Component {
     // Unassigned people for this month
     const unassignedPeople = people.filter(p => personToTeamMap[p.name] === null);
 
-    const onDragEnd = (result) => {
-      const { destination, source, draggableId } = result;
-      if (!destination) return;
-      if (
-        destination.droppableId === source.droppableId &&
-        destination.index === source.index
-      ) return;
-
-      const { teams } = this.props;
-      const personToTeam = this.getPersonToTeamMap();
-      const personName = draggableId;
-
-      const sourceIsTeam = source.droppableId.startsWith("team-");
-      const destIsTeam = destination.droppableId.startsWith("team-");
-
-      if (source.droppableId === destination.droppableId) {
-        if (sourceIsTeam) {
-          const teamIndex = parseInt(source.droppableId.split("-")[1], 10);
-          const team = filteredTeams[teamIndex];
-          const newMembers = Array.from(team.members);
-          newMembers.splice(source.index, 1);
-          newMembers.splice(destination.index, 0, draggableId);
-          this.props.updateTeamMembers(team.index, newMembers);
-        }
-      } else {
-        // Remove from old team (if any)
-        const oldTeamIndex = personToTeamMap[draggableId];
-        if (oldTeamIndex !== null) {
-          const oldTeam = filteredTeams[oldTeamIndex];
-          const newMembers = oldTeam.members.filter(m => m !== draggableId);
-          this.props.updateTeamMembers(oldTeam.index, newMembers);
-        }
-
-        // Add to new team
-        if (destIsTeam) {
-          const newTeamIndex = parseInt(destination.droppableId.split("-")[1], 10);
-          const newTeam = filteredTeams[newTeamIndex];
-          const newMembers = newTeam.members ? [...newTeam.members] : [];
-          newMembers.splice(destination.index, 0, draggableId);
-          this.props.updateTeamMembers(newTeam.index, newMembers);
-        }
-      }
-    };
-
 
     const getItemStyle = (isDragging, draggableStyle) => ({
       userSelect: 'none',
@@ -334,7 +285,7 @@ class ManageTeamsAndPeople extends Component {
 
     const getListStyle = (isDraggingOver) => ({
       background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
-      padding: 6,
+      padding: ".75em .25em !important",
       minHeight: 50,
       maxHeight: 400,
       borderRadius: 6,
@@ -360,9 +311,9 @@ class ManageTeamsAndPeople extends Component {
 
     const getTeamListStyle = (isDraggingOver) => ({
       background: isDraggingOver ? '#bbdefb' : '#f5f5f5',
-      padding: 2,
-      height: 400,
-      borderRadius: 6,
+      padding: ".75em .25em !important",
+      minHeight: 400,
+      borderRadius: 3,
       border: '1px solid',
       borderColor: '#1976d2',
       display: 'flex',
@@ -506,15 +457,15 @@ class ManageTeamsAndPeople extends Component {
             </Typography>
             <Box sx={{ ...getListStyle(false), minHeight: 100 }}>
               {unassignedPeople.length === 0 ? (
-                <Typography sx={{ textAlign: 'center' }}>No unassigned salespeople</Typography>
+                <Typography sx={{ textAlign: 'center', margin: "auto", position: "absolute", top: "50%", left: "50%",transform: "translate(-50%, -50%)" }}>No unassigned salespeople</Typography>
               ) : (
                 unassignedPeople.map((person) => (
                   <Box
                     key={person.name}
                     sx={{
                       ...getItemStyle(false),
-                      width: '90%',
-                      minHeight: 50,
+                      width: '100%',
+                      minHeight: 40,
                       margin: '0 auto 6px auto',
                       padding: '8px 12px',
                       display: 'flex',
@@ -544,6 +495,7 @@ class ManageTeamsAndPeople extends Component {
                         <MenuItem value="" disabled>Assign</MenuItem>
                         {filteredTeams.map((team) => {
                           const inTeam = team.members.includes(person.name);
+
                           return (
                             <MenuItem key={team.id} value={team.id} disabled={inTeam}>
                               {team.name}{inTeam ? " (already in)" : ""}
@@ -591,12 +543,12 @@ class ManageTeamsAndPeople extends Component {
               {filteredTeams.length === 0 && <Typography sx={{ gridColumn: '1 / -1', textAlign: 'center' }}>No teams added yet</Typography>}
               {filteredTeams.map((team, index) => (
                 <Paper key={team.name} sx={{ ...getTeamListStyle(), borderColor: team.color, padding: '0.5em 0.75em' }}>
-                  <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: team.color, fontWeight: 'bold', fontSize: '1.1rem', flexWrap: 'wrap' }}>
+                  <Box sx={{mt: 1, mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: team.color, fontWeight: 'bold', fontSize: '1.1rem', flexWrap: 'wrap' }}>
                     {editingTeamIndex === index ? (
                       <>
                         <TextField value={editingTeamName} onChange={(e) => this.setState({ editingTeamName: e.target.value })} size="small" sx={{ flexGrow: 1, minWidth: '6rem' }} />
                         <input type="color" value={editingTeamColor} onChange={(e) => this.setState({ editingTeamColor: e.target.value })} style={{ width: 30, height: 30, border: 'none', cursor: 'pointer' }} />
-                        <Button size="small" onClick={this.saveEditingTeam} sx={{ color: team.color }}>Save</Button>
+                        <Button size="small" onClick={() => this.saveEditingTeam(team)} sx={{ color: team.color }}>Save</Button>
                         <Button size="small" onClick={this.cancelEditingTeam} sx={{ color: team.color }}>Cancel</Button>
                       </>
                     ) : (
@@ -619,12 +571,12 @@ class ManageTeamsAndPeople extends Component {
                           key={memberName}
                           sx={{
                             ...getItemStyle(false),
-                            width: '90%',
-                            minHeight: 50,
+                            width: '100%',
+                            minHeight: 40,
                             margin: '0 auto 6px auto',
                             padding: '8px 12px',
                             display: 'flex',
-                            justifyContent: 'space-between',
+                            justifyContent: 'space-evenly',
                             alignItems: 'center',
                             borderRadius: 4,
                             backgroundColor: '#f9f9f9',
@@ -667,7 +619,7 @@ class ManageTeamsAndPeople extends Component {
                                 const currentTeam = teams.find((t) => t.members.includes(memberName));
                                 if (currentTeam) this.handleRemoveFromTeam(memberName, currentTeam.id);
                               }}
-                              sx={{ minWidth: 28, padding: '2px 6px' }}
+                              sx={{ minWidth: 25, padding: '1px 6px' }}
                             >
                               Unassign
                             </Button>
