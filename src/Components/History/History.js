@@ -663,8 +663,49 @@ html += `</body></html>`;
         </TableContainer>
       </Paper>
 
+      {/* Mobile Cards */}
+      <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 4 }}>
+        {this.aggregateByMonth().map(({ month, totals }) => {
+          const maxSales = Math.max(...Object.values(totals));
+          return (
+            <Paper key={month} sx={{ p: 2, mb: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                {month}
+              </Typography>
+              {teams.map((team) => {
+                const isMax = totals[team.name] === maxSales;
+                const members = team.members || [];
+                return (
+                  <Tooltip
+                    key={team.id}
+                    title={`Members: ${members.map((m) => `${m} (${monthlyMemberSales[month]?.[m] || 0})`).join(', ')}`}
+                    arrow
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 0.5,
+                        p: 1,
+                        bgcolor: '#f0f0f0',
+                        borderRadius: 1,
+                        fontWeight: isMax ? 'bold' : 'normal',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      }}
+                    >
+                      <span>{team.name}</span>
+                      <span>{totals[team.name] || 0}</span>
+                    </Box>
+                  </Tooltip>
+                );
+              })}
+            </Paper>
+          );
+        })}
+      </Box>
+
       {/* Desktop Table */}
-      <Box sx={{ display: { sm: 'block' }, overflowX: 'auto' }}>
+      <Box sx={{ display: { xs: 'none', sm: 'block' }, overflowX: 'auto' }}>
         <TableContainer component={Paper} sx={{ minWidth: 600 }}>
           <Table stickyHeader size="small">
             <TableHead>
