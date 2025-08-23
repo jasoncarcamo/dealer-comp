@@ -685,14 +685,14 @@ html += `</body></html>`;
 
       {/* Mobile Cards */}
       <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 4 }}>
-        {this.aggregateByMonth().map(({ month, totals }) => {
+        {this.aggregateByMonth().sort((a, b) => (a.name > b.month ? 1 : -1)).map(({ month, totals }) => {
           const maxSales = Math.max(...Object.values(totals));
           return (
             <Paper key={month} sx={{ p: 2, mb: 2 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {month}
               </Typography>
-              {teams.map((team) => {
+              {teams.sort((a, b) => (a.name > b.name ? 1 : -1)).map((team) => {
                 const isMax = totals[team.name] === maxSales;
                 const members = team.members || [];
                 return (
