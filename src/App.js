@@ -83,6 +83,7 @@ class App extends Component {
         this.setState({
           teams: JSON.parse(TeamStorage.getTeams()),
           people: JSON.parse(PeopleStorage.getPeople()),
+          salesData: JSON.parse(SalesStorage.getSales()),
           loadingData: false
         });
       });
