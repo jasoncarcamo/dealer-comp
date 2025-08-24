@@ -24,6 +24,7 @@ class EnterSales extends Component {
       salesInputs: {}, // { "personName": number }
       originalSalesInputs: {},
       confirmOpen: false,
+      changesMade: false
     };
   }
 
@@ -72,10 +73,17 @@ class EnterSales extends Component {
     const numVal = Math.max(0, parseInt(val) || 0);
     this.setState((prev) => ({
       salesInputs: { ...prev.salesInputs, [personName]: numVal },
+      changesMade: true
     }));
   };
 
   handleSaveClick = () => {
+    if(!this.state.changesMade){
+      alert('No changes have been made');
+
+      return;
+    };
+
     this.setState({ confirmOpen: true });
   };
 
@@ -84,7 +92,7 @@ class EnterSales extends Component {
     let { salesData } = this.props;
     salesData = salesData.filter((d) => d.date !== date);
     const newSale = { date, ...salesInputs };
-   
+    console.log(newSale)
     if(!newSale.hasOwnProperty("id")){
       salesData.push(newSale);
     };
@@ -93,7 +101,7 @@ class EnterSales extends Component {
 
     this.props.updateSalesData(salesData, newSale);
     
-    this.setState({ originalSalesInputs: salesInputs, confirmOpen: false });
+    this.setState({ originalSalesInputs: salesInputs, confirmOpen: false , changesMade: false});
     alert('Sales saved!');
   };
 
@@ -107,7 +115,7 @@ class EnterSales extends Component {
   render() {
     const { people } = this.props;
     const { date, salesInputs, confirmOpen } = this.state;
-
+    console.log(this.state.changesMade)
     return (
       <div>
         <Typography variant="h5" gutterBottom>
