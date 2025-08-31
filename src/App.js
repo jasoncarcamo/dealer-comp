@@ -75,7 +75,7 @@ class App extends Component {
     FetchData.getData()
       .then( data => {
         const teams = data.teams;
-        
+
         TeamStorage.setTeams(teams);
         PeopleStorage.setPeople(data.people)
         SalesStorage.setSale(this.handleSalesData(data.salesData));
@@ -105,8 +105,8 @@ class App extends Component {
       .catch( err => console.log(err))
   };
 
-  removeTeam = (teamIndex) => {
-  const teamToRemove = this.state.teams[teamIndex];
+  removeTeam = (team) => {
+  const teamToRemove = this.state.teams.filter( currentTeam => currentTeam.name === team.name)[0];
 
   FetchTeams.deleteTeamById(teamToRemove.id)
     .then((deletedTeam) => {

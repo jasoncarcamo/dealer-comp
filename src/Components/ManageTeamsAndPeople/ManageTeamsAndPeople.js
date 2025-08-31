@@ -160,10 +160,9 @@ class ManageTeamsAndPeople extends Component {
     this.setState({ addingPerson: false, addPersonNameInput: '' });
   };
 
-  handleRemoveTeam = (teamIndex) => {
-    const teamName = this.props.teams[teamIndex].name;
-    if (window.confirm(`Are you sure you want to delete the team "${teamName}"?`)) {
-      this.props.removeTeam(teamIndex);
+  handleRemoveTeam = (team) => {
+    if (window.confirm(`Are you sure you want to delete the team "${team.name}"?`)) {
+      this.props.removeTeam(team);
     }
   };
 
@@ -542,7 +541,7 @@ class ManageTeamsAndPeople extends Component {
                         <span>{team.name}</span>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                           <Button size="small" sx={{ color: team.color }} onClick={() => this.startEditingTeam(index, team.name, team.color)}>Edit</Button>
-                          <Button size="small" sx={{ color: team.color }} onClick={() => this.handleRemoveTeam(index)}>Delete</Button>
+                          <Button size="small" sx={{ color: team.color }} onClick={() => this.handleRemoveTeam(team)}>Delete</Button>
                         </Box>
                       </>
                     )}
