@@ -92,7 +92,7 @@ class EnterSales extends Component {
     let { salesData } = this.props;
     salesData = salesData.filter((d) => d.date !== date);
     const newSale = { date, ...salesInputs };
-    console.log(newSale)
+    
     if(!newSale.hasOwnProperty("id")){
       salesData.push(newSale);
     };
@@ -115,7 +115,7 @@ class EnterSales extends Component {
   render() {
     const { people } = this.props;
     const { date, salesInputs, confirmOpen } = this.state;
-    console.log(this.state.changesMade)
+    
     return (
       <div>
         <Typography variant="h5" gutterBottom>

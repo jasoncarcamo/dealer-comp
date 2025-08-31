@@ -228,7 +228,7 @@ class CompetitionAndCharts extends Component {
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
     const filteredTeams = teams.filter(
-      team => new Date(team.date).getMonth() === new Date().getMonth());
+      team => new Date(team.date).getMonth() === new Date().getMonth() && new Date(team.date).getFullYear() === new Date().getFullYear());
 
     if (!teams.length) {
       return <Typography>No teams available. Please add teams first.</Typography>;
@@ -245,10 +245,12 @@ class CompetitionAndCharts extends Component {
 
     return (
       <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 2 }}>
-        <Typography variant="h5" gutterBottom>Team Sales ({currentMonthYear})</Typography>
+        {filteredTeams.length > 0 ? (
+          <Typography variant="h5" gutterBottom>Team Sales ({currentMonthYear})</Typography>
+        ) : <Typography variant="h5" gutterBottom>There are currently no teams for ({currentMonthYear})</Typography>}
 
         <Box sx={{ mb: 4 }}>
-          {teams.sort((a, b) => a.name.localeCompare(b.name)).filter((team) => new Date(team.date).getMonth() === new Date().getMonth() ? team : "").map((team) => (
+          {filteredTeams.sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
             <Paper key={team.name} sx={{ mb: 2, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}>
               <Typography variant="h6" sx={{ color: team.color }}>
                 {team.name} — Total Sales: {teamTotals[team.name] || 0}
@@ -269,7 +271,7 @@ class CompetitionAndCharts extends Component {
         </Box>
 
         {/* Bar chart */}
-        <ResponsiveContainer width="100%" height={400}>
+        {filteredTeams.length > 0 ? (<ResponsiveContainer width="100%" height={400}>
           <BarChart data={barData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} barCategoryGap="25%">
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="team" tick={{ textAnchor: 'middle' }} />
@@ -282,20 +284,20 @@ class CompetitionAndCharts extends Component {
               ))}
             </Bar>
           </BarChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer>) : ""}
 
         {/* Controls */}
-        <Stack direction="row" spacing={2} sx={{ mt: 4 }}>
+        {filteredTeams.length > 0 ? (<Stack direction="row" spacing={2} sx={{ mt: 4 }}>
           <Button variant="contained" onClick={this.handlePrint}>Print Line Charts</Button>
           <Button variant="outlined" onClick={this.handleDownload}>Download as PDF</Button>
-        </Stack>
+        </Stack>) : ""}
 
         {/* Line charts section */}
         <Box sx={{ mt: 1 }} ref={this.lineChartsRef}>
-          <Typography variant="h5" gutterBottom>
-            Salesperson Daily Sales by Team ({currentMonthYear})
-          </Typography>
-          {teams.map((team) => {
+          {filteredTeams.length > 0 ? (<Typography variant="h5" gutterBottom>
+            Salesperson Daily Sales by Teams ({currentMonthYear})
+          </Typography>) : ""}
+          {filteredTeams.map((team) => {
             if (!team.members || team.members.length === 0) {
               return (
                 <Typography key={team.name} color="text.secondary" sx={{ mb: 3 }}>
