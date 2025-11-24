@@ -49,11 +49,11 @@ const FetchBonuses = {
     },
     patchBonusById(patchBonus, id){
         return fetch(`${url}/api/bonuses/${id}`, {
-            method: "patch",
+            method: "PATCH",
             headers: {
-                'content-type': "application/json",
-                body: JSON.stringify(patchBonus)
-            }
+                'content-type': "application/json"
+            },
+            body: JSON.stringify(patchBonus)
         })
             .then( res => {
                 if(!res){

@@ -5,10 +5,18 @@ export default class BonusesList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      expandedMonths: {}
+      expandedMonths: {},
+      editingId: null,
+      editCriteria: "",
+      editAmount: "",
+      editStart: "",
+      editEnd: ""
     };
   }
 
+  // ───────────────────────────────
+  // Month toggle
+  // ───────────────────────────────
   toggleMonth = (monthKey) => {
     this.setState((prev) => ({
       expandedMonths: {
@@ -18,6 +26,9 @@ export default class BonusesList extends Component {
     }));
   };
 
+  // ───────────────────────────────
+  // Group bonuses by month
+  // ───────────────────────────────
   groupByMonth = (bonuses) => {
     const groups = {};
     bonuses.forEach((b) => {
@@ -29,48 +40,141 @@ export default class BonusesList extends Component {
     return groups;
   };
 
-  render() {
-    const { bonuses, onRemove, onEdit } = this.props;
-    const { expandedMonths } = this.state;
-    const today = new Date();
+  // ───────────────────────────────
+  // Start inline editing
+  // ───────────────────────────────
+  startEdit = (bonus) => {
+    this.setState({
+      editingId: bonus.id,
+      editCriteria: bonus.criteria,
+      editAmount: bonus.amount,
+      editStart: bonus.start_date.split("T")[0],
+      editEnd: bonus.end_date.split("T")[0]
+    });
+  };
 
+  // ───────────────────────────────
+  // Submit inline edit
+  // ───────────────────────────────
+  saveEdit = () => {
+    const { editingId, editCriteria, editAmount, editStart, editEnd } = this.state;
+
+    this.props.onSaveEdit({
+      id: Number(editingId),
+      criteria: editCriteria,
+      amount: parseInt(editAmount, 10),
+      start_date: editStart,
+      end_date: editEnd
+    });
+
+    this.setState({
+      editingId: null
+    });
+  };
+
+  // ───────────────────────────────
+  // Cancel inline editing
+  // ───────────────────────────────
+  cancelEdit = () => {
+    this.setState({ editingId: null });
+  };
+
+  // ───────────────────────────────
+  // Render
+  // ───────────────────────────────
+  render() {
+    const { bonuses, onRemove } = this.props;
+    const { expandedMonths, editingId } = this.state;
+
+    const today = new Date();
     const grouped = this.groupByMonth(bonuses);
     const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    console.log(grouped)
+
     return (
       <div className="bonuses-list">
-        {Object.keys(grouped).length === 0 && <p className="empty">No bonuses to display.</p>}
+        {Object.keys(grouped).length === 0 && (
+          <p className="empty">No bonuses to display.</p>
+        )}
 
         {Object.keys(grouped).sort().map((monthKey) => {
           const [year, monthIndex] = monthKey.split("-");
-          const monthLabel = `${monthNames[parseInt(monthIndex)-1]} ${year}`;
-          const isExpanded = expandedMonths[monthKey] || false;
+          const label = `${monthNames[parseInt(monthIndex)-1]} ${year}`;
+          const isExpanded = expandedMonths[monthKey];
 
           return (
             <div key={monthKey} className="month-group">
               <div className="month-header" onClick={() => this.toggleMonth(monthKey)}>
-                <h3>{monthLabel}</h3>
+                <h3>{label}</h3>
                 <span className="toggle-icon">{isExpanded ? "▼" : "▶"}</span>
               </div>
 
-              {isExpanded && grouped[monthKey].sort((a, b) => new Date(b.date_created < new Date(a.date_created))).map((b) => {
-                const endDate = new Date(b.end_date);
-                const canEdit = today <= endDate; // Only edit if today <= bonus end date
+              {isExpanded &&
+                grouped[monthKey].map((b) => {
+                  const endDate = new Date(b.end_date);
+                  const canEdit = today <= endDate;
 
-                return (
-                  <div key={b.id} className="bonus-item pop-in">
-                    <div className="bonus-header">
-                      <h4>{b.criteria}</h4>
-                      <div>
-                        {canEdit && <button className="edit-btn" onClick={() => onEdit(b)}>Edit</button>}
-                        <button className="remove-btn" onClick={() => onRemove(b.id)}>×</button>
+                  // ───────────────────────────────────────
+                  // IF THIS BONUS IS IN EDIT MODE
+                  // ───────────────────────────────────────
+                  if (editingId === b.id) {
+                    return (
+                      <div key={b.id} className="bonus-item editing pop-in">
+                        <input
+                          type="text"
+                          value={this.state.editCriteria}
+                          onChange={(e) => this.setState({ editCriteria: e.target.value })}
+                        />
+                        <input
+                          type="number"
+                          value={this.state.editAmount}
+                          onChange={(e) => this.setState({ editAmount: e.target.value })}
+                        />
+
+                        <label>End</label>
+                        <input
+                          type="date"
+                          value={this.state.editEnd}
+                          onChange={(e) => this.setState({ editEnd: e.target.value })}
+                        />
+
+                        <div className="edit-actions">
+                          <button className="save-btn" onClick={this.saveEdit}>
+                            Save
+                          </button>
+                          <button className="cancel-btn" onClick={this.cancelEdit}>
+                            Cancel
+                          </button>
+                        </div>
                       </div>
+                    );
+                  }
+
+                  // ───────────────────────────────────────
+                  // NORMAL BONUS VIEW
+                  // ───────────────────────────────────────
+                  return (
+                    <div key={b.id} className="bonus-item pop-in">
+                      <div className="bonus-header">
+                        <h4>{b.criteria}</h4>
+
+                        <div className="actions">
+                          {canEdit && (
+                            <button className="edit-btn" onClick={() => this.startEdit(b)}>
+                              Edit
+                            </button>
+                          )}
+
+                          <button className="remove-btn" onClick={() => onRemove(b.id)}>
+                            ×
+                          </button>
+                        </div>
+                      </div>
+
+                      <p className="amount">${b.amount}</p>
+                      <p className="dates">{b.start_date.split("T")[0]} → {b.end_date.split("T")[0]}</p>
                     </div>
-                    <p className="amount">${b.amount}</p>
-                    <p className="dates">{b.start_date.split("T")[0]} → {b.end_date.split("T")[0]}</p>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           );
         })}

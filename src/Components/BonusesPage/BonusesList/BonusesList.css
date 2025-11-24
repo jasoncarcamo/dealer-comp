@@ -56,3 +56,86 @@
 .toggle-icon { font-weight: bold; }
 .bonus-item { padding: 12px; border-top: 1px solid #eee; background: #fafafa; transition: box-shadow 0.2s; }
 .bonus-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+
+/* ---------- INLINE EDIT MODE ---------- */
+.bonus-item.editing {
+  background: #ffffff;
+  border-left: 4px solid #0077cc;
+  padding: 16px;
+  border-radius: 6px;
+  animation: dropDown 0.35s ease forwards;
+  overflow: hidden;
+}
+
+/* Drop-down keyframes */
+@keyframes dropDown {
+  0% {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
+  }
+  50% {
+    opacity: 0.5;
+    max-height: 100px;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    max-height: 500px; /* high enough for inputs */
+    transform: translateY(0);
+  }
+}
+
+/* Input fields */
+.bonus-item.editing input {
+  width: 100%;
+  padding: 8px 10px;
+  margin: 6px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* Labels for dates */
+.bonus-item.editing label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+/* Save/Cancel buttons */
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #218838;
+}
+
+.cancel-btn {
+  background: #aaa;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #888;
+}

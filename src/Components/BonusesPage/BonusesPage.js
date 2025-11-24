@@ -16,6 +16,7 @@ export default class BonusesPage extends Component {
         confirmationVisible: false,
         confirmationMessage: "",
         action: null,
+        showForm: false
     };
 }
 
@@ -23,25 +24,38 @@ export default class BonusesPage extends Component {
 componentDidMount(){
 }
 
+toggleForm = () => {
+    this.setState((prev) => ({ showForm: !prev.showForm }));
+  };
+
+  addBonus = (bonus) => {
+    // Example: send to backend then update state
+    this.setState((prev) => ({
+      bonuses: [...prev.bonuses, { ...bonus, id: Date.now() }],
+      showForm: false, // hide form after adding
+    }));
+  };
+
+  removeBonus = (id) => {
+    this.setState((prev) => ({
+      bonuses: prev.bonuses.filter((b) => b.id !== id),
+    }));
+  };
+
 onCloseConfirmation = () => {
     this.setState({ confirmationVisible: false, confirmationMessage: "" });
 };
 
 addBonus = (bonus) => {
-    console.log(bonus)
     FetchBonuses.createBonus(bonus)
         .then(saved => {
-            console.log(saved)
             BonusesStorage.setBonuses([...this.state.bonuses, saved.createdBonus])
             this.setState(
                 prev => ({
                   bonuses: [...prev.bonuses, saved.createdBonus],
                   confirmationVisible: true,
                   confirmationMessage: "Bonus added successfully!"
-                }),
-                () => {
-                  setTimeout(() => this.setState({ confirmationVisible: false, confirmationMessage: "" }), 5000);
-                }
+                })
               );
         })
         .catch(err => console.error("Error adding bonus", err));
@@ -56,20 +70,30 @@ removeBonus = (id) => {
                     bonuses: updatedBonus,
                     confirmationVisible: true,
                     confirmationMessage: "Bonus removed"
-                  }),
-                  () => {
-                    setTimeout(() => this.setState({ confirmationVisible: false, confirmationMessage: "" }), 5000);
-                  });
+                  }));
             });
 };
 
 
 startEdit = (bonus) => {
-this.setState({ editingBonus: bonus });
+    this.setState({ editingBonus: bonus });
 };
 
+saveEdit = (updateBonus) => {
+    console.log(updateBonus)
+    FetchBonuses.patchBonusById(updateBonus, updateBonus.id)
+        .then(patchedBonus => {
+            console.log(Number(patchedBonus.id) === updateBonus.id)
+            const bonusIndex = this.state.bonuses.findIndex( bonus => Number(bonus.id) === Number(patchedBonus.id))
+            const bonuses = this.state.bonuses;
+            console.log(bonusIndex, bonuses)
+            bonuses[bonusIndex] = patchedBonus;
 
-saveEdit = (updatedBonus) => {
+            BonusesStorage.setBonuses(bonuses);
+            this.setState({bonuses})
+            console.log(bonusIndex)
+        })
+        .catch(err => console.log(err))
 };
 
 
@@ -79,9 +103,7 @@ this.setState({ editingBonus: null });
 
 render() {
     const { bonuses, editingBonus } = this.state;
-    const today = new Date();
-    console.log(bonuses)
-    
+    const today = new Date();   
     const current = bonuses.filter((b) => today >= new Date(b.start_date) && today <= new Date(b.end_date));
     const past = bonuses.filter((b) => new Date(b.end_date) < today);
     
@@ -96,23 +118,27 @@ render() {
         onClose={this.onCloseConfirmation}
     />
 
-    <BonusForm
+    <button className="toggle-form-btn" onClick={this.toggleForm}>
+        {this.state.showForm ? "Hide Form" : "Add New Bonus"}
+    </button>
+
+    {this.state.showForm && <BonusForm
     onAdd={this.addBonus}
     onSaveEdit={this.saveEdit}
     editingBonus={editingBonus}
     onCancel={this.cancelEdit}
-    />
+    />}
     
     
     <section>
     <h2 className="section-title">Current Bonuses</h2>
-    <BonusesList  bonuses={current} onRemove={this.removeBonus} onEdit={this.startEdit} />
+    <BonusesList  bonuses={current} onRemove={this.removeBonus} onEdit={this.startEdit}  onSaveEdit={this.saveEdit}/>
     </section>
     
     
     <section>
     <h2 className="section-title">Past Bonuses</h2>
-    <BonusesList bonuses={past} onRemove={this.removeBonus} onEdit={this.startEdit} />
+    <BonusesList bonuses={past} onRemove={this.removeBonus} onEdit={this.startEdit} onSaveEdit={this.saveEdit}/>
     </section>
     </div>
     );

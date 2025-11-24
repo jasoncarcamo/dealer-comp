@@ -1,49 +1,105 @@
-.bonus-form { 
-    display: flex; 
-    flex-direction: column; 
-    max-width: 300px; 
-    padding: 15px; 
-    border: 1px solid #ccc; 
-    border-radius: 6px; 
-    margin-bottom: 20px; 
-    background: #ffffffee; 
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+/* ---------- FORM WRAPPER ---------- */
+.bonus-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 320px;
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background: #ffffffee;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+  animation: none; /* default */
+}
+
+/* ---------- DROP-DOWN ANIMATION ---------- */
+.drop-down {
+  animation: dropDown 0.35s ease forwards;
+}
+
+@keyframes dropDown {
+  0% {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
   }
-  
-  .form-title { 
-    margin-bottom: 10px; 
-    font-size: 20px; 
+  50% {
+    opacity: 0.5;
+    max-height: 100px;
+    transform: translateY(-10px);
   }
-  
-  .bonus-form input { 
-    margin-bottom: 10px; 
-    padding: 6px; 
-    border: 1px solid #bbb; 
-    border-radius: 4px; 
+  100% {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
   }
-  
-  .error { 
-    color: red; 
-    margin-bottom: 8px; 
-  }
-  
-  .submit-btn { 
-    padding: 8px; 
-    cursor: pointer; 
-    background: #2d6cdf; 
-    color: white; 
-    border: none; 
-    border-radius: 4px; 
-    margin-top: 5px; 
-  }
-  
-  .cancel-btn { 
-    padding: 8px; 
-    cursor: pointer; 
-    background: #555; 
-    color: white; 
-    border: none; 
-    border-radius: 4px; 
-    margin-top: 5px; 
-  }
-  
+}
+
+/* ---------- FORM TITLE ---------- */
+.form-title {
+  font-size: 20px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* ---------- INPUTS ---------- */
+.bonus-form input {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* ---------- LABELS ---------- */
+.bonus-form label {
+  font-size: 13px;
+  margin-top: 8px;
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+/* ---------- ERROR MESSAGE ---------- */
+.error {
+  color: #e53935;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+/* ---------- BUTTONS ---------- */
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.submit-btn {
+  padding: 8px 14px;
+  cursor: pointer;
+  background: #2d6cdf;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.submit-btn:hover {
+  background: #1e4fb7;
+}
+
+.cancel-btn {
+  padding: 8px 14px;
+  cursor: pointer;
+  background: #555;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #333;
+}
