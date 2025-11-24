@@ -58,7 +58,7 @@ export default class BonusForm extends Component {
 
     this.props.onAdd(bonus);
 
-    this.setState({ criteria: "", amount: "", startDate: "", endDate: "", error: "" });
+    this.setState({ criteria: "", amount: "", startDate: "", endDate: "", date_created: "", error: "" });
   };
 
   render() {

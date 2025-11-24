@@ -16,7 +16,8 @@ export default class BonusesPage extends Component {
         confirmationVisible: false,
         confirmationMessage: "",
         action: null,
-        showForm: false
+        showForm: false,
+        expandList: false
     };
 }
 
@@ -32,7 +33,8 @@ toggleForm = () => {
     // Example: send to backend then update state
     this.setState((prev) => ({
       bonuses: [...prev.bonuses, { ...bonus, id: Date.now() }],
-      showForm: false, // hide form after adding
+      showForm: false, // hide form after adding,
+      expandList: true
     }));
   };
 
@@ -46,6 +48,18 @@ onCloseConfirmation = () => {
     this.setState({ confirmationVisible: false, confirmationMessage: "" });
 };
 
+expandLists = ()=>{
+    this.setState({
+        expandList: true
+    })
+}
+
+toggleExpandList = ()=>{
+    this.setState({
+        expandList: !this.state.expandList
+    })
+}
+
 addBonus = (bonus) => {
     FetchBonuses.createBonus(bonus)
         .then(saved => {
@@ -54,7 +68,8 @@ addBonus = (bonus) => {
                 prev => ({
                   bonuses: [...prev.bonuses, saved.createdBonus],
                   confirmationVisible: true,
-                  confirmationMessage: "Bonus added successfully!"
+                  confirmationMessage: "Bonus added successfully!",
+                  expandList: true
                 })
               );
         })
@@ -70,7 +85,7 @@ removeBonus = (id) => {
                     bonuses: updatedBonus,
                     confirmationVisible: true,
                     confirmationMessage: "Bonus removed"
-                  }));
+                }));
             });
 };
 
@@ -80,18 +95,15 @@ startEdit = (bonus) => {
 };
 
 saveEdit = (updateBonus) => {
-    console.log(updateBonus)
     FetchBonuses.patchBonusById(updateBonus, updateBonus.id)
         .then(patchedBonus => {
-            console.log(Number(patchedBonus.id) === updateBonus.id)
             const bonusIndex = this.state.bonuses.findIndex( bonus => Number(bonus.id) === Number(patchedBonus.id))
             const bonuses = this.state.bonuses;
-            console.log(bonusIndex, bonuses)
+
             bonuses[bonusIndex] = patchedBonus;
 
             BonusesStorage.setBonuses(bonuses);
-            this.setState({bonuses})
-            console.log(bonusIndex)
+            this.setState({bonuses});
         })
         .catch(err => console.log(err))
 };
@@ -107,7 +119,6 @@ render() {
     const current = bonuses.filter((b) => today >= new Date(b.start_date) && today <= new Date(b.end_date));
     const past = bonuses.filter((b) => new Date(b.end_date) < today);
     
-    console.log(current.length)
     return (
     <div className="bonuses-page fade-in">
     <h1 className="title">Sales Bonuses</h1>
@@ -132,13 +143,13 @@ render() {
     
     <section>
     <h2 className="section-title">Current Bonuses</h2>
-    <BonusesList  bonuses={current} onRemove={this.removeBonus} onEdit={this.startEdit}  onSaveEdit={this.saveEdit}/>
+    <BonusesList  bonuses={current} onRemove={this.removeBonus} onEdit={this.startEdit}  onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} current_bonuses={true}/>
     </section>
     
     
     <section>
     <h2 className="section-title">Past Bonuses</h2>
-    <BonusesList bonuses={past} onRemove={this.removeBonus} onEdit={this.startEdit} onSaveEdit={this.saveEdit}/>
+    <BonusesList bonuses={past} onRemove={this.removeBonus} onEdit={this.startEdit} onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} past_bonuses={true}/>
     </section>
     </div>
     );

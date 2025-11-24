@@ -18,6 +18,7 @@ export default class BonusesList extends Component {
   // Month toggle
   // ───────────────────────────────
   toggleMonth = (monthKey) => {
+    this.props.expandLists();
     this.setState((prev) => ({
       expandedMonths: {
         ...prev.expandedMonths,
@@ -96,7 +97,7 @@ export default class BonusesList extends Component {
           <p className="empty">No bonuses to display.</p>
         )}
 
-        {Object.keys(grouped).sort().map((monthKey) => {
+        {Object.keys(grouped).sort((a, b)=> a - b).map((monthKey) => {
           const [year, monthIndex] = monthKey.split("-");
           const label = `${monthNames[parseInt(monthIndex)-1]} ${year}`;
           const isExpanded = expandedMonths[monthKey];
@@ -104,12 +105,12 @@ export default class BonusesList extends Component {
           return (
             <div key={monthKey} className="month-group">
               <div className="month-header" onClick={() => this.toggleMonth(monthKey)}>
-                <h3>{label}</h3>
+                {!this.props.current_bonuses ? <h3>{label}</h3> : <h3></h3>}
                 <span className="toggle-icon">{isExpanded ? "▼" : "▶"}</span>
               </div>
 
               {isExpanded &&
-                grouped[monthKey].map((b) => {
+                grouped[monthKey].sort().map((b) => {
                   const endDate = new Date(b.end_date);
                   const canEdit = today <= endDate;
 
@@ -164,14 +165,22 @@ export default class BonusesList extends Component {
                             </button>
                           )}
 
-                          <button className="remove-btn" onClick={() => onRemove(b.id)}>
+                          {!this.props.past_bonuses ? (<button className="remove-btn" onClick={() => onRemove(b.id)}>
                             ×
-                          </button>
+                          </button>): ""}
                         </div>
                       </div>
 
                       <p className="amount">${b.amount}</p>
-                      <p className="dates">{b.start_date.split("T")[0]} → {b.end_date.split("T")[0]}</p>
+                      <p className="dates">{new Date(b.start_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit"
+                        })} → {new Date(b.end_date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit"
+                        })}</p>
                     </div>
                   );
                 })}
