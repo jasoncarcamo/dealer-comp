@@ -32,6 +32,7 @@ export default function TabsMenu({ value, onChange }) {
           },
         }}
       >
+        <Tab label="Bonuses"/>
         <Tab label="Manage Teams" />
         <Tab label="Enter Sales" />
         <Tab label="Current Competition" />

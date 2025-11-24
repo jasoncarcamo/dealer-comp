@@ -22,6 +22,8 @@ import TeamStorage from './Services/StorageService/TeamStorage';
 import FetchSalesPeople from './Services/FetchServices/FetchSalesPeople';
 import FetchTeams from './Services/FetchServices/FetchTeams';
 import FetchSales from './Services/FetchServices/FetchSales';
+import BonusesPage from './Components/BonusesPage/BonusesPage';
+import BonusesStorage from './Services/StorageService/BonusesStorage';
 
 // Helper component to bridge hooks with class component
 function TabsRouterWrapper({ onTabChange }) {
@@ -30,18 +32,20 @@ function TabsRouterWrapper({ onTabChange }) {
 
   // Map path to tab index
   const pathToIndex = {
-    '/manage-teams': 0,
-    '/enter-sales': 1,
-    '/competition': 2,
-    '/history': 3,
+    '/bonuses': 0,
+    '/manage-teams': 1,
+    '/enter-sales': 2,
+    '/competition': 3,
+    '/history': 4,
   };
 
   // Map tab index to path
   const indexToPath = {
-    0: '/manage-teams',
-    1: '/enter-sales',
-    2: '/competition',
-    3: '/history',
+    0: "/bonuses",
+    1: '/manage-teams',
+    2: '/enter-sales',
+    3: '/competition',
+    4: '/history',
   };
 
   // When URL changes, notify parent to update tabValue state
@@ -67,6 +71,7 @@ class App extends Component {
       teams: JSON.parse(TeamStorage.getTeams()) || [],
       people: JSON.parse(PeopleStorage.getPeople()) || [],
       salesData: JSON.parse(SalesStorage.getSales()) || [],
+      bonuses: JSON.parse(BonusesStorage.getBonuses()) || [],
       loadingData: true
     };
   }
@@ -75,15 +80,18 @@ class App extends Component {
     FetchData.getData()
       .then( data => {
         const teams = data.teams;
+        const bonuses = data.bonuses;
 
         TeamStorage.setTeams(teams);
         PeopleStorage.setPeople(data.people)
         SalesStorage.setSale(this.handleSalesData(data.salesData));
+        BonusesStorage.setBonuses(bonuses);
 
         this.setState({
           teams: JSON.parse(TeamStorage.getTeams()),
           people: JSON.parse(PeopleStorage.getPeople()),
           salesData: JSON.parse(SalesStorage.getSales()),
+          bonuses,
           loadingData: false
         });
       });
@@ -285,6 +293,25 @@ class App extends Component {
           <Container sx={{ marginTop: 4, marginBottom: 4 }}>
             <Paper sx={{ padding: 3 }}>
               <Routes>
+
+              <Route
+                  path="/bonuses"
+                  element={
+                    <BonusesPage
+                      teams={this.state.teams}
+                      people={this.state.people}
+                      salesData={this.state.salesData}
+                      addTeam={this.addTeam}
+                      removeTeam={this.removeTeam}
+                      updateTeam={this.updateTeam}
+                      addPerson={this.addPerson}
+                      removePerson={this.removePerson}
+                      updateTeamMembers={this.updateTeamMembers}
+                      updateTeamNameAndColor={this.updateTeamNameAndColor}
+                    />
+                  }
+                />
+
                 <Route
                   path="/manage-teams"
                   element={
@@ -302,6 +329,7 @@ class App extends Component {
                     />
                   }
                 />
+
                 <Route
                   path="/enter-sales"
                   element={
@@ -332,7 +360,7 @@ class App extends Component {
                   }
                 />
                 {/* Default redirect */}
-                <Route path="*" element={<Navigate to="/manage-teams" replace />} />
+                <Route path="*" element={<Navigate to="/bonuses" replace />} />
               </Routes>
             </Paper>
           </Container>

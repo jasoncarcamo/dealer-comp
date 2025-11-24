@@ -1,0 +1,38 @@
+.confirmation-message {
+    position: fixed;
+    top: 50%;
+    left: 50%; /* center horizontally */
+    transform: translate(-50%, -50%); /* adjust for slide-down */
+    background: #4caf50;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 250px;
+    justify-content: center;
+  }
+  
+  .confirmation-message.show {
+    opacity: 1;
+    transform: translate(-50%, 0); /* slide down into view */
+  }
+  
+  .ok-btn {
+    background: white;
+    color: #4caf50;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .ok-btn:hover {
+    background: #f0f0f0;
+  }
+  

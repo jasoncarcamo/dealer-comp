@@ -1,0 +1,58 @@
+.bonuses-list { 
+    margin-top: 10px; 
+  }
+  
+  .empty { 
+    color: #777; 
+  }
+  
+  .bonus-item { 
+    border: 1px solid #ddd; 
+    padding: 12px; 
+    border-radius: 6px; 
+    margin-bottom: 12px; 
+    background: #fafafa; 
+    transition: box-shadow 0.2s; 
+  }
+  
+  .bonus-item:hover { 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+  }
+  
+  .bonus-header { 
+    display: flex; 
+    justify-content: space-between; 
+  }
+  
+  .edit-btn { 
+    margin-right: 8px; 
+    background: #0077cc; 
+    border: none; 
+    padding: 5px 8px; 
+    color: white; 
+    border-radius: 4px; 
+    cursor: pointer; 
+  }
+  
+  .remove-btn { 
+    background: none; 
+    border: none; 
+    font-size: 18px; 
+    cursor: pointer; 
+    color: #900; 
+  }
+  
+  .amount { 
+    font-size: 20px; 
+    font-weight: bold; 
+  }
+  
+  .dates { 
+    color: #555; 
+  }
+  
+  .month-group { margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
+.month-header { background: #f0f0f0; padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.toggle-icon { font-weight: bold; }
+.bonus-item { padding: 12px; border-top: 1px solid #eee; background: #fafafa; transition: box-shadow 0.2s; }
+.bonus-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
