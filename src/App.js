@@ -177,7 +177,6 @@ class App extends Component {
         );
       })
       .catch( err => {
-        console.Consolelog(err)
       })
   };
 

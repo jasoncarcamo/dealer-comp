@@ -91,7 +91,7 @@ export default class BonusesList extends Component {
     const today = new Date();
     const grouped = this.groupByMonth(bonuses);
     const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    console.log(grouped)
+    
     return (
       <div className="bonuses-list">
         {Object.keys(grouped).length === 0 && (

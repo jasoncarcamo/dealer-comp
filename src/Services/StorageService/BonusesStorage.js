@@ -28,7 +28,9 @@ const BonusesStorage = {
     },
     findBonusById(bonus){
         const bonuses = JSON.parse(this.getBonuses());
-        const bonusesByYearandMonth = bonuses[new Date(bonus.start_date).getFullYear()][new Date(bonus.start_date).getMonth()];
+        let year = new Date(bonus.start_date).getFullYear();
+        let month = new Date(bonus.start_date).getMonth();
+        const bonusesByYearandMonth = bonuses[year][month];
         const bonusIndex = bonusesByYearandMonth.findIndex(b => b.id = bonus.id);
 
   
@@ -36,9 +38,18 @@ const BonusesStorage = {
     },
     addBonus(bonus){
         const bonuses = JSON.parse(this.getBonuses());
-        const bonusesByYearandMonth = bonuses[new Date(bonus.start_date).getFullYear()][new Date(bonus.start_date).getMonth()];
+        let year = new Date(bonus.start_date).getFullYear();
+        let month = new Date(bonus.start_date).getMonth();
+
+        if(typeof bonuses[year] !== "object"){
+            bonuses[year] = {};
+        };
+
+        if(Array.isArray(bonuses[year][month]) === false){
+            bonuses[year][month] = [];
+        };
         
-        bonusesByYearandMonth.push(bonus)
+        bonuses[year][month].push(bonus)
         
         return bonuses
     },
