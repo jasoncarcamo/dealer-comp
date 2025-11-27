@@ -132,7 +132,6 @@ class App extends Component {
     });
 };
 
-
   updateTeam = (index, updatedTeam) => {
     const teams = [...this.state.teams];
 

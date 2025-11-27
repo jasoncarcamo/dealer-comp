@@ -32,6 +32,7 @@ export default class BonusesList extends Component {
   // ───────────────────────────────
   groupByMonth = (bonuses) => {
     const groups = {};
+
     bonuses.forEach((b) => {
       const date = new Date(b.start_date);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -90,14 +91,14 @@ export default class BonusesList extends Component {
     const today = new Date();
     const grouped = this.groupByMonth(bonuses);
     const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
+    console.log(grouped)
     return (
       <div className="bonuses-list">
         {Object.keys(grouped).length === 0 && (
           <p className="empty">No bonuses to display.</p>
         )}
 
-        {Object.keys(grouped).sort((a, b)=> a - b).map((monthKey) => {
+        {Object.keys(grouped).sort((a, b)=> b > a ? 1 : -1).map((monthKey) => {
           const [year, monthIndex] = monthKey.split("-");
           const label = `${monthNames[parseInt(monthIndex)-1]} ${year}`;
           const isExpanded = expandedMonths[monthKey];
@@ -110,7 +111,7 @@ export default class BonusesList extends Component {
               </div>
 
               {isExpanded &&
-                grouped[monthKey].sort().map((b) => {
+                grouped[monthKey].sort((a, b)=> b.date_created > a.date_created ? 1 : -1).map((b) => {
                   const endDate = new Date(b.end_date);
                   const canEdit = today <= endDate;
 

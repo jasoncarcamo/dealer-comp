@@ -38,12 +38,6 @@ toggleForm = () => {
     }));
   };
 
-  removeBonus = (id) => {
-    this.setState((prev) => ({
-      bonuses: prev.bonuses.filter((b) => b.id !== id),
-    }));
-  };
-
 onCloseConfirmation = () => {
     this.setState({ confirmationVisible: false, confirmationMessage: "" });
 };
@@ -63,10 +57,10 @@ toggleExpandList = ()=>{
 addBonus = (bonus) => {
     FetchBonuses.createBonus(bonus)
         .then(saved => {
-            BonusesStorage.setBonuses([...this.state.bonuses, saved.createdBonus])
+            BonusesStorage.saveBonuses(BonusesStorage.addBonus(saved.createdBonus))
             this.setState(
                 prev => ({
-                  bonuses: [...prev.bonuses, saved.createdBonus],
+                  bonuses: JSON.parse(BonusesStorage.getBonuses()),
                   confirmationVisible: true,
                   confirmationMessage: "Bonus added successfully!",
                   expandList: true
@@ -79,10 +73,9 @@ addBonus = (bonus) => {
 removeBonus = (id) => {
     FetchBonuses.deleteBonusById(id)
             .then( deletedBonus => {
-                const updatedBonus = this.state.bonuses.filter(b => b.id !== id)
-                BonusesStorage.setBonuses(updatedBonus);
+                BonusesStorage.deleteBonus(deletedBonus.deletedBonus);
                 this.setState(prev => ({
-                    bonuses: updatedBonus,
+                    bonuses: JSON.parse(BonusesStorage.getBonuses()),
                     confirmationVisible: true,
                     confirmationMessage: "Bonus removed"
                 }));
@@ -97,13 +90,9 @@ startEdit = (bonus) => {
 saveEdit = (updateBonus) => {
     FetchBonuses.patchBonusById(updateBonus, updateBonus.id)
         .then(patchedBonus => {
-            const bonusIndex = this.state.bonuses.findIndex( bonus => Number(bonus.id) === Number(patchedBonus.id))
-            const bonuses = this.state.bonuses;
 
-            bonuses[bonusIndex] = patchedBonus;
-
-            BonusesStorage.setBonuses(bonuses);
-            this.setState({bonuses});
+            BonusesStorage.editBonus(patchedBonus);
+            this.setState({bonuses: JSON.parse(BonusesStorage.getBonuses())});
         })
         .catch(err => console.log(err))
 };
@@ -115,9 +104,27 @@ this.setState({ editingBonus: null });
 
 render() {
     const { bonuses, editingBonus } = this.state;
-    const today = new Date();   
-    const current = bonuses.filter((b) => today >= new Date(b.start_date) && today <= new Date(b.end_date));
-    const past = bonuses.filter((b) => new Date(b.end_date) < today);
+    const today = new Date(); 
+    let current = [];
+    let past = [];
+
+    for(const yearKey in bonuses){
+        if(Number(yearKey) === today.getFullYear()){
+            current = bonuses[yearKey][today.getMonth()];
+        };
+
+        const months = bonuses[yearKey];
+
+        for (const monthKey in months) {
+            const monthBonuses = months[monthKey];
+
+            for (const b of monthBonuses) {
+                if (new Date(b.end_date) < today) {
+                    past.push(b);
+                }
+            }
+        }
+    }
     
     return (
     <div className="bonuses-page fade-in">
