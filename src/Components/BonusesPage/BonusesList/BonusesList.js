@@ -177,10 +177,12 @@ export default class BonusesList extends Component {
 
                       <p className="amount">${b.amount}</p>
                       <p className="dates">{new Date(b.start_date).toLocaleDateString("en-US", {
+                        timeZone: "UTC",
                         year: "numeric",
                         month: "2-digit",
                         day: "2-digit"
                         })} → {new Date(b.end_date).toLocaleDateString("en-US", {
+                            timeZone: "UTC",
                             year: "numeric",
                             month: "2-digit",
                             day: "2-digit"
