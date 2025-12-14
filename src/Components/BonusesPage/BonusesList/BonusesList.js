@@ -33,6 +33,10 @@ export default class BonusesList extends Component {
   groupByMonth = (bonuses) => {
     const groups = {};
 
+    if(!bonuses){
+      return groups;
+    };
+
     bonuses.forEach((b) => {
       const date = new Date(b.start_date);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -60,7 +64,6 @@ export default class BonusesList extends Component {
   // ───────────────────────────────
   saveEdit = () => {
     const { editingId, editCriteria, editAmount, editStart, editEnd } = this.state;
-
     this.props.onSaveEdit({
       id: Number(editingId),
       criteria: editCriteria,

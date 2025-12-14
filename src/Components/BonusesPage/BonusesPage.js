@@ -29,15 +29,6 @@ toggleForm = () => {
     this.setState((prev) => ({ showForm: !prev.showForm }));
   };
 
-  addBonus = (bonus) => {
-    // Example: send to backend then update state
-    this.setState((prev) => ({
-      bonuses: [...prev.bonuses, { ...bonus, id: Date.now() }],
-      showForm: false, // hide form after adding,
-      expandList: true
-    }));
-  };
-
 onCloseConfirmation = () => {
     this.setState({ confirmationVisible: false, confirmationMessage: "" });
 };

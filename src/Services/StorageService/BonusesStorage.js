@@ -56,15 +56,16 @@ const BonusesStorage = {
     editBonus(editedBonus){
         const bonuses = JSON.parse(this.getBonuses());
         const bonusesByYearandMonth = bonuses[new Date(editedBonus.start_date).getFullYear()][new Date(editedBonus.start_date).getMonth()];
-        const bonusIndex = bonusesByYearandMonth.findIndex(b => b.id = editedBonus.id);
+        const bonusIndex = bonusesByYearandMonth.findIndex(b => b.id === editedBonus.id);
 
-        bonusesByYearandMonth[bonusIndex] = editedBonus;
+        bonusesByYearandMonth.splice(bonusIndex,1, editedBonus);
+        
         this.saveBonuses(bonuses);
     },
     deleteBonus(bonus){
         const bonuses = JSON.parse(this.getBonuses());
         let bonusesByYearandMonth = bonuses[new Date(bonus.start_date).getFullYear()][new Date(bonus.start_date).getMonth()];
-        const bonusIndex = bonusesByYearandMonth.findIndex(b => b.id = bonus.id);
+        const bonusIndex = bonusesByYearandMonth.findIndex(b => b.id === bonus.id);
         
         bonusesByYearandMonth.splice(bonusIndex, 1);
 
