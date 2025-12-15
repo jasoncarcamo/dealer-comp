@@ -3,7 +3,7 @@ import { Tabs, Tab, useMediaQuery, useTheme, Box } from '@mui/material';
 
 export default function TabsMenu({ value, onChange }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <Box

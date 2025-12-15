@@ -23,12 +23,34 @@
   border-radius: 6px;
   margin-bottom: 12px;
   background: #fafafa;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: box-shadow 1s ease, transform 0.2s ease;
 }
 
 .bonus-item:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
+
+@keyframes glow_high_light {
+  0% {
+    box-shadow: 0 0 0 white;
+    border-color: white;
+  }
+  50% {
+    box-shadow: 0 0 0 rgba(255, 220, 100, 1); /* brighter yellow */
+    border-color: #ffd633;
+  }
+  100% {
+    box-shadow: 0 0 0 white;
+    border-color: white;
+  }
+}
+
+.highlight-new {
+  animation-name: glow_high_light !important;
+  animation-duration: 2.8s !important;
+  animation-iteration-count: infinite !important;
+}
+
 
 /* ===============================
    HEADER
@@ -103,7 +125,7 @@
   background: #ffffff;
   border-left: 4px solid #0077cc;
   padding: 16px;
-  animation: editPopIn 0.35s ease forwards;
+  transition: all 2s ease-in-out;
   overflow-x: hidden;
 }
 

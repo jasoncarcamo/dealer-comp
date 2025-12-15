@@ -91,7 +91,7 @@ class App extends Component {
           teams: JSON.parse(TeamStorage.getTeams()),
           people: JSON.parse(PeopleStorage.getPeople()),
           salesData: JSON.parse(SalesStorage.getSales()),
-          bonuses,
+          bonuses: JSON.parse(BonusesStorage.getBonuses()),
           loadingData: false
         });
       });

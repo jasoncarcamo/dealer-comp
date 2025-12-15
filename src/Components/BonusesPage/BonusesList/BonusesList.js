@@ -10,15 +10,45 @@ export default class BonusesList extends Component {
       editCriteria: "",
       editAmount: "",
       editStart: "",
-      editEnd: ""
+      editEnd: "",
+      newlyAddedId: null,
     };
   }
+
+  componentDidMount(){
+    this.setState({
+      newlyAddedId: this.props.newlyAddedId
+    });
+  }
+
+  componentDidUpdate(prevProps) {
+    // ONLY expand when a new bonus was added
+    if (
+      this.props.newlyAddedId &&
+      prevProps.newlyAddedId !== this.props.newlyAddedId
+    ) {
+      const bonus = this.props.bonuses.find(
+        b => b.id === this.props.newlyAddedId
+      );
+      if (!bonus) return;
+  
+      const d = new Date(bonus.start_date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  
+      this.setState((prev) => ({
+        expandedMonths: {
+          ...prev.expandedMonths,
+          [key]: true
+        },
+        newlyAddedId: this.props.newlyAddedId
+      }));
+    }
+  }  
 
   // ───────────────────────────────
   // Month toggle
   // ───────────────────────────────
   toggleMonth = (monthKey) => {
-    this.props.expandLists();
     this.setState((prev) => ({
       expandedMonths: {
         ...prev.expandedMonths,
@@ -26,6 +56,7 @@ export default class BonusesList extends Component {
       }
     }));
   };
+  
 
   // ───────────────────────────────
   // Group bonuses by month
@@ -117,13 +148,13 @@ export default class BonusesList extends Component {
                 grouped[monthKey].sort((a, b)=> b.date_created > a.date_created ? 1 : -1).map((b) => {
                   const endDate = new Date(b.end_date);
                   const canEdit = today <= endDate;
-
+                  
                   // ───────────────────────────────────────
                   // IF THIS BONUS IS IN EDIT MODE
                   // ───────────────────────────────────────
                   if (editingId === b.id) {
                     return (
-                      <div key={b.id} className="bonus-item editing pop-in">
+                      <div key={b.id} className={`bonus-item editing pop-in`}>
                         <input
                           type="text"
                           value={this.state.editCriteria}
@@ -158,7 +189,7 @@ export default class BonusesList extends Component {
                   // NORMAL BONUS VIEW
                   // ───────────────────────────────────────
                   return (
-                    <div key={b.id} className="bonus-item pop-in">
+                    <div key={b.id} className={`bonus-item editing pop-in ${this.state.newlyAddedId === b.id ? "highlight-new" : ""}`} onClick={()=> this.setState({ newlyAddedId: null })}>
                       <div className="bonus-header">
                         <h4>{b.criteria}</h4>
 

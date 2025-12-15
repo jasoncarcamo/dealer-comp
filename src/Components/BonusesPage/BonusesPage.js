@@ -17,7 +17,8 @@ export default class BonusesPage extends Component {
         confirmationMessage: "",
         action: null,
         showForm: false,
-        expandList: false
+        expandList: false,
+        newlyAddedId: null
     };
 }
 
@@ -54,7 +55,8 @@ addBonus = (bonus) => {
                   bonuses: JSON.parse(BonusesStorage.getBonuses()),
                   confirmationVisible: true,
                   confirmationMessage: "Bonus added successfully!",
-                  expandList: true
+                  expandList: true,
+                  newlyAddedId: saved.createdBonus.id
                 })
               );
         })
@@ -83,7 +85,9 @@ saveEdit = (updateBonus) => {
         .then(patchedBonus => {
 
             BonusesStorage.editBonus(patchedBonus);
-            this.setState({bonuses: JSON.parse(BonusesStorage.getBonuses())});
+            this.setState({
+                bonuses: JSON.parse(BonusesStorage.getBonuses())
+            });
         })
         .catch(err => console.log(err))
 };
@@ -141,13 +145,13 @@ render() {
     
     <section>
     <h2 className="section-title">Current Bonuses</h2>
-    <BonusesList  bonuses={current} onRemove={this.removeBonus} onEdit={this.startEdit}  onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} current_bonuses={true}/>
+    <BonusesList newlyAddedId={this.state.newlyAddedId}  bonuses={current} onRemove={this.removeBonus} onEdit={this.startEdit}  onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} current_bonuses={true}/>
     </section>
     
     
     <section>
     <h2 className="section-title">Past Bonuses</h2>
-    <BonusesList bonuses={past} onRemove={this.removeBonus} onEdit={this.startEdit} onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} past_bonuses={true}/>
+    <BonusesList newlyAddedId={this.state.newlyAddedId}  bonuses={past} onRemove={this.removeBonus} onEdit={this.startEdit} onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} past_bonuses={true}/>
     </section>
     </div>
     );
