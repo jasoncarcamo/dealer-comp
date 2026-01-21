@@ -105,7 +105,15 @@ render() {
 
     for(const yearKey in bonuses){
         if(Number(yearKey) === today.getFullYear()){
-            current = bonuses[yearKey][today.getMonth()];
+            console.log(bonuses[yearKey])
+            let current_bonuses = bonuses[yearKey][today.getMonth()];
+
+            for(const monthKey in current_bonuses){
+                console.log(current_bonuses[monthKey])
+                if(new Date (current_bonuses[monthKey].start_date) <= today && new Date(current_bonuses[monthKey].end_date) >= today){
+                    current.push(current_bonuses[monthKey])
+                }
+            }
         };
 
         const months = bonuses[yearKey];
@@ -114,7 +122,7 @@ render() {
             const monthBonuses = months[monthKey];
 
             for (const b of monthBonuses) {
-                if (new Date(b.end_date) < today) {
+                if (new Date(b.end_date) <= today) {
                     past.push(b);
                 }
             }
