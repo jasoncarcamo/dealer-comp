@@ -140,7 +140,7 @@ class History extends Component {
     container.innerHTML += html;
   });
 
-  import('html2pdf.js').then((html2pdf) => {
+  import('html2pdf.js/dist/html2pdf.min.js').then((html2pdf) => {
     const opt = {
       margin: 10,
       filename: `sales-report-${selectedDate}.pdf`,
