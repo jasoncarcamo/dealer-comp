@@ -140,7 +140,7 @@ export default class BonusesList extends Component {
           return (
             <div key={monthKey} className="month-group">
               <div className="month-header" onClick={() => this.toggleMonth(monthKey)}>
-                {!this.props.current_bonuses ? <h3>{label}</h3> : <h3></h3>}
+                {!this.props.current_bonuses ? <h3>{label}</h3> : <h3>Active</h3>}
                 <span className="toggle-icon">{isExpanded ? "▼" : "▶"}</span>
               </div>
 
