@@ -8,7 +8,6 @@ import {
   MenuItem,
   Select
 } from '@mui/material';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import "./ManageTeamsAndPeople.css"
 
 class ManageTeamsAndPeople extends Component {

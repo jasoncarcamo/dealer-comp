@@ -15,8 +15,6 @@ import {
   Button,
   Tooltip,
 } from '@mui/material';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 
 class History extends Component {
