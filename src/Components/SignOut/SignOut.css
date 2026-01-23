@@ -1,0 +1,120 @@
+.signout-wrapper {
+    width: 100%;
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    font-family: sans-serif;
+  }
+  
+  /* Confirmation box / modal */
+  .signout-box {
+    background: white;
+    width: 90%;
+    max-width: 360px;
+    padding: 24px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transform: translateY(0);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  
+  /* Buttons container */
+  .signout-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .signout-buttons button {
+    flex: 1 1 120px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .signout-yes {
+    background-color: #e60012;
+    color: white;
+  }
+  
+  .signout-yes:hover {
+    background-color: #c80010;
+  }
+  
+  .signout-no {
+    background-color: #ccc;
+    color: #333;
+  }
+  
+  .signout-no:hover {
+    background-color: #aaa;
+  }
+  
+  /* Success toast */
+  .signout-success {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #28a745;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: fadeInOut 1.5s forwards;
+  }
+  
+  /* Toast fade animation */
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  }
+  
+  /* -------- Mobile adjustments + slide-up animation -------- */
+  @media (max-width: 480px) {
+    .signout-box {
+      width: 95%;
+      max-width: 320px;
+      padding: 20px 16px;
+      border-radius: 10px;
+      gap: 12px;
+      transform: translateY(50px); /* start below */
+      opacity: 0;
+      animation: slideUp 0.4s forwards;
+    }
+  
+    .signout-buttons {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .signout-buttons button {
+      flex: 1 1 100%;
+    }
+  }
+  
+  /* Slide-up animation for mobile */
+  @keyframes slideUp {
+    0% {
+      transform: translateY(50px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  

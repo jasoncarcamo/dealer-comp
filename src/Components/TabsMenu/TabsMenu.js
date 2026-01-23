@@ -39,7 +39,7 @@ export default function TabsMenu({ value, onChange }) {
         <Tab label="Current Competition" value="competition"/>
         <Tab label="History" value="history" />
 
-        {TokenService.getToken() ? "" : <Tab label="Log in" value="login"/>}
+        {TokenService.getToken() ? <Tab label="Sign out" value="signout"/> : <Tab label="Log in" value="login"/>}
       </Tabs>
     </Box>
   );

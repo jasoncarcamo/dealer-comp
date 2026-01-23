@@ -25,6 +25,7 @@ import FetchTeams from './Services/FetchServices/FetchTeams';
 import FetchSales from './Services/FetchServices/FetchSales';
 import BonusesPage from './Components/BonusesPage/BonusesPage';
 import BonusesStorage from './Services/StorageService/BonusesStorage';
+import SignOut from './Components/SignOut/SignOut';
 
 // Helper component to bridge hooks with class component
 function TabsRouterWrapper({ onTabChange }) {
@@ -39,6 +40,7 @@ const pathToIndex = {
   "/competition": "competition",
   "/history": "history",
   "/login": "login",
+  "/signout": "signout"
 };
 
 // Map tab value to path
@@ -49,6 +51,7 @@ const indexToPath = {
   "competition": "/competition",
   "history": "/history",
   "login": "/login",
+  "signout": "/signout"
 };
 
 
@@ -370,6 +373,13 @@ class App extends Component {
                       teams={this.state.teams}
                       people={this.state.people}
                     />
+                  }
+                />
+
+                <Route
+                  path="/signout"
+                  element={
+                    <SignOut/>
                   }
                 />
 
