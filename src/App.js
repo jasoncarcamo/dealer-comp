@@ -5,6 +5,7 @@ import ManageTeamsAndPeople from './Components/ManageTeamsAndPeople/ManageTeamsA
 import EnterSales from './Components/EnterSales/EnterSales';
 import CompetitionAndCharts from './Components/CompetitionAndCharts/CompetitionAndCharts';
 import History from './Components/History/History';
+import LogIn from "./Components/LogIn/LogIn";
 import FullScreenLoader from './Components/FullScreenLoader/FullScreenloader';
 import { Container, Paper } from '@mui/material';
 import {
@@ -30,23 +31,26 @@ function TabsRouterWrapper({ onTabChange }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Map path to tab index
-  const pathToIndex = {
-    '/bonuses': 0,
-    '/manage-teams': 1,
-    '/enter-sales': 2,
-    '/competition': 3,
-    '/history': 4,
-  };
+  // Map path to tab value
+const pathToIndex = {
+  "/bonuses": "bonuses",
+  "/manage-teams": "manage-teams",
+  "/enter-sales": "enter-sales",
+  "/competition": "competition",
+  "/history": "history",
+  "/login": "login",
+};
 
-  // Map tab index to path
-  const indexToPath = {
-    0: "/bonuses",
-    1: '/manage-teams',
-    2: '/enter-sales',
-    3: '/competition',
-    4: '/history',
-  };
+// Map tab value to path
+const indexToPath = {
+  "bonuses": "/bonuses",
+  "manage-teams": "/manage-teams",
+  "enter-sales": "/enter-sales",
+  "competition": "/competition",
+  "history": "/history",
+  "login": "/login",
+};
+
 
   // When URL changes, notify parent to update tabValue state
   React.useEffect(() => {
@@ -357,6 +361,18 @@ class App extends Component {
                     />
                   }
                 />
+
+                <Route
+                  path="/login"
+                  element={
+                    <LogIn
+                      salesData={this.state.salesData}
+                      teams={this.state.teams}
+                      people={this.state.people}
+                    />
+                  }
+                />
+
                 {/* Default redirect */}
                 <Route path="*" element={<Navigate to="/bonuses" replace />} />
               </Routes>

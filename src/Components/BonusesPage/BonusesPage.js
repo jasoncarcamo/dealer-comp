@@ -5,6 +5,7 @@ import "./BonusesPage.css";
 import FetchBonuses from "../../Services/FetchServices/FetchBonuses";
 import ConfirmationMessage from "../ConfrimationMessage/ConfirmationMessage";
 import BonusesStorage from "../../Services/StorageService/BonusesStorage";
+import TokenService from "../../Services/StorageService/TokenService";
 
 export default class BonusesPage extends Component {
     constructor(props) {
@@ -137,9 +138,11 @@ render() {
         onClose={this.onCloseConfirmation}
     />
 
-    <button className="toggle-form-btn" onClick={this.toggleForm}>
+    {TokenService.getToken() ? (
+        <button className="toggle-form-btn" onClick={this.toggleForm}>
         {this.state.showForm ? "Hide Form" : "Add New Bonus"}
     </button>
+    ) : ""}
 
     {this.state.showForm && <BonusForm
     onAdd={this.addBonus}

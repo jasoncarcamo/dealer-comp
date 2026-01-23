@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./BonusesList.css";
+import TokenService from "../../../Services/StorageService/TokenService";
 
 export default class BonusesList extends Component {
   constructor(props) {
@@ -193,7 +194,8 @@ export default class BonusesList extends Component {
                       <div className="bonus-header">
                         <h4>{b.criteria}</h4>
 
-                        <div className="actions">
+                        {TokenService.getToken() ? (
+                          <div className="actions">
                           {canEdit && (
                             <button className="edit-btn" onClick={() => this.startEdit(b)}>
                               Edit
@@ -204,6 +206,7 @@ export default class BonusesList extends Component {
                             ×
                           </button>): ""}
                         </div>
+                        ) : ""}
                       </div>
 
                       <p className="amount">${b.amount}</p>

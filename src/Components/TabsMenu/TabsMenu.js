@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tabs, Tab, useMediaQuery, useTheme, Box } from '@mui/material';
+import TokenService from '../../Services/StorageService/TokenService';
 
 export default function TabsMenu({ value, onChange }) {
   const theme = useTheme();
@@ -32,11 +33,13 @@ export default function TabsMenu({ value, onChange }) {
           },
         }}
       >
-        <Tab label="Bonuses"/>
-        <Tab label="Manage Teams" />
-        <Tab label="Enter Sales" />
-        <Tab label="Current Competition" />
-        <Tab label="History" />
+        <Tab label="Bonuses" value="bonuses" />
+        {TokenService.getToken() ? <Tab label="Manage Teams" value="manage-teams"/> : ""}
+        {TokenService.getToken() ? <Tab label="Enter Sales" value="enter-sales"/> : ""}
+        <Tab label="Current Competition" value="competition"/>
+        <Tab label="History" value="history" />
+
+        {TokenService.getToken() ? "" : <Tab label="Log in" value="login"/>}
       </Tabs>
     </Box>
   );

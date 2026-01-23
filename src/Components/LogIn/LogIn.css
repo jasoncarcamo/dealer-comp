@@ -1,0 +1,77 @@
+/* Layout */
+.login-wrapper {
+    width: 100%l;
+    min-height: calc(80vh - 60px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Card */
+.login-card {
+  background: white;
+  width: 100%;
+  max-width: 380px;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px; /* prevents iOS zoom */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #e60012;
+}
+
+/* Button */
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #e60012;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.login-btn:hover {
+  background-color: #c80010;
+}
+
+/* -------- Desktop Enhancements -------- */
+@media (min-width: 768px) {
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .login-card {
+    padding: 30px;
+  }
+}
