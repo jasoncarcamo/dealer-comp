@@ -1,3 +1,25 @@
+.login-success {
+    position: absolute; /* float above form */
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: fadeInOut 1.5s forwards;
+  }
+  
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  }
+
 /* Layout */
 .login-wrapper {
     width: 100%l;
@@ -37,7 +59,8 @@
 }
 
 .form-group input {
-  width: 100%;
+    width: 80%;         /* shrink the input width */
+    max-width: 300px; 
   padding: 12px;
   font-size: 16px; /* prevents iOS zoom */
   border: 1px solid #ccc;
@@ -48,6 +71,13 @@
   outline: none;
   border-color: #e60012;
 }
+
+.login-error {
+    color: #e60012;
+    font-size: 14px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
 
 /* Button */
 .login-btn {
@@ -74,4 +104,8 @@
   .login-card {
     padding: 30px;
   }
+
+  .form-group input {
+    width: 100%;
+    }
 }
