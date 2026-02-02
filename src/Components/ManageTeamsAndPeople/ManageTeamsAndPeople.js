@@ -132,10 +132,7 @@ class ManageTeamsAndPeople extends Component {
     const date = new Date();
 
     if (!name) return alert('Please enter a team name');
-    const exists = this.props.teams.some(
-      (team) => team.name.toLowerCase() === name.toLowerCase()
-    );
-    if (exists) return alert('Team name already exists.');
+    
     this.props.addTeam({ name, color: this.state.addTeamColorInput, members: [], date});
     this.setState({ addingTeam: false, addTeamNameInput: '', addTeamColorInput: '#1976d2' });
   };
