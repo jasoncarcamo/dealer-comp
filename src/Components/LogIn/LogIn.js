@@ -57,7 +57,6 @@ export default class LogIn extends React.Component{
     }
 
     render(){
-        console.log(this.state)
         if (this.state.redirect) {
             return <Navigate to="/bonuses" replace />;
         };

@@ -65,7 +65,7 @@ class ManageTeamsAndPeople extends Component {
         const teamIndex = personToTeam[personName];
         const team = teams[teamIndex];
         const newMembers = team.members.filter(m => m !== personName);
-        this.props.updateTeamMembers(teamIndex, newMembers);
+        //this.props.updateTeamMembers(teamIndex, newMembers);
       }
     }
   };

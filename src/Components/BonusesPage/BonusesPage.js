@@ -104,13 +104,21 @@ render() {
     let current = [];
     let past = [];
 
+    today.setHours(0, 0, 0, 0);
+
     for(const yearKey in bonuses){
         if(Number(yearKey) === today.getFullYear()){
             let current_bonuses = bonuses[yearKey][today.getMonth()];
 
             for(const monthKey in current_bonuses){
-                if(new Date (current_bonuses[monthKey].start_date) <= today && new Date(current_bonuses[monthKey].end_date) >= today){
-                    current.push(current_bonuses[monthKey])
+                const start_date = new Date(current_bonuses[monthKey].start_date);
+                const end_date = new Date(current_bonuses[monthKey].end_date);
+
+                start_date.setHours(0, 0, 0, 0);
+                end_date.setHours(23, 59, 59, 999); // include the entire end_date day
+
+                if (start_date <= today && end_date >= today) {
+                    current.push(current_bonuses[monthKey]);
                 }
             }
         };
