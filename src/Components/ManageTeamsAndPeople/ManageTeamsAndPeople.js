@@ -612,7 +612,7 @@ class ManageTeamsAndPeople extends Component {
                     )}
 
                     {/*
-                        "<IconButton
+                        <IconButton
                         size="small"
                         onClick={() =>
                           this.setState({
@@ -622,7 +622,7 @@ class ManageTeamsAndPeople extends Component {
                         }
                       >
                         <EditIcon fontSize="small" />
-                      </IconButton>"
+                      </IconButton>
                         */}
 
                     {/* Remove */}
