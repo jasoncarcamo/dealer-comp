@@ -73,7 +73,7 @@ class CompetitionAndCharts extends Component {
     const filteredData = this.filterSalesDataForCurrentMonth();
     const result = [];
     filteredData.forEach((dayEntry) => {
-      const day = { date: dayEntry.date };
+      const day = { date: new Date(dayEntry.date).toLocaleDateString()};
       if (team.members && team.members.length) {
         team.members.forEach((member) => {
           day[member] = dayEntry[member] || 0;
@@ -82,6 +82,8 @@ class CompetitionAndCharts extends Component {
       result.push(day);
     });
     result.sort((a, b) => (a.date > b.date ? 1 : -1));
+
+    console.log(result)
     return result;
   }
 
