@@ -103,7 +103,8 @@ class CompetitionAndCharts extends Component {
   CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length && this.props.teams.length) {
       const teamName = label;
-      const team = this.props.teams.find((t) => t.name === teamName);
+      const team = this.props.teams.filter(
+        team => new Date(team.date).getMonth() === new Date().getMonth() && new Date(team.date).getFullYear() === new Date().getFullYear()).find((t) => t.name === teamName);
       const totalSales = payload[0].value;
       return (
         <Paper elevation={3} sx={{ padding: 1, backgroundColor: 'white', border: '1px solid #ccc', maxWidth: 250 }}>
