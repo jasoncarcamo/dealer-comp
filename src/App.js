@@ -89,9 +89,7 @@ class App extends Component {
         const teams = data.teams;
         const bonuses = data.bonuses;
         const people = data.people;
-        const salesData = data.salesData
-
-        console.log(data)
+        const salesData = data.salesData;
 
         TeamStorage.setTeams(teams);
         PeopleStorage.setPeople(people)
