@@ -370,8 +370,10 @@ class App extends Component {
                   path="/competition"
                   element={
                     <CompetitionAndCharts
+                      key={JSON.stringify(this.state.teams)}
                       salesData={this.state.salesData}
                       teams={this.state.teams}
+                      people={this.state.people}
                     />
                   }
                 />
