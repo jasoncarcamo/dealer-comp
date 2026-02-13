@@ -70,36 +70,6 @@ class CompetitionAndCharts extends Component {
     return teamTotals;
   }
 
-  getSalesForPeriod() {
-    const { salesData, people } = this.props;
-
-    if (!Array.isArray(people) || !Array.isArray(salesData)) return {};
-
-    let startDate, endDate;
-    const dateObj = new Date().getMonth();
-      
-    startDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
-    endDate = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
-
-    const filteredEntries = salesData.filter((entry) => {
-      const entryDate = new Date(entry.date);
-      return entryDate >= startDate && entryDate <= endDate;
-    });
-
-    const salesSum = {};
-    people.forEach((p) => {
-      salesSum[p.name] = 0;
-    });
-
-    filteredEntries.forEach((entry) => {
-      people.forEach((p) => {
-        salesSum[p.name] += entry[p.name] || 0;
-      });
-    });
-
-    return salesSum;
-  }
-
   aggregateSalesBySalesperson(team) {
     const filteredData = this.filterSalesDataForCurrentMonth();
     const result = [];
@@ -256,7 +226,6 @@ class CompetitionAndCharts extends Component {
     const { teams } = this.props;
     const salespersonTotals = this.getSalespersonTotals();
     const teamTotals = this.getTeamTotals(salespersonTotals);
-    const salesForPeriod = this.getSalesForPeriod();
     const now = new Date();
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
