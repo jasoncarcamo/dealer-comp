@@ -66,6 +66,9 @@ class CompetitionAndCharts extends Component {
       }
       teamTotals[team.name] = total;
     });
+
+    console.log(teamTotals)
+
     return teamTotals;
   }
 
@@ -83,7 +86,6 @@ class CompetitionAndCharts extends Component {
     });
     result.sort((a, b) => (a.date > b.date ? 1 : -1));
 
-    console.log(result)
     return result;
   }
 
