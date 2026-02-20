@@ -117,7 +117,7 @@ render() {
                 start_date.setHours(0, 0, 0, 0);
                 end_date.setHours(23, 59, 59, 999); // include the entire end_date day
 
-                if (start_date <= today && end_date >= today) {
+                if (start_date <= today && end_date >= today || start_date === today && end_date === today) {
                     current.push(current_bonuses[monthKey]);
                 }
             }
@@ -129,7 +129,7 @@ render() {
             const monthBonuses = months[monthKey];
 
             for (const b of monthBonuses) {
-                if (new Date(b.end_date) <= today) {
+                if (new Date(b.end_date) < today) {
                     past.push(b);
                 }
             }
