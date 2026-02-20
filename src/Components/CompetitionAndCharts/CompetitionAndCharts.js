@@ -24,11 +24,14 @@ class CompetitionAndCharts extends Component {
   }
 
   filterSalesDataForCurrentMonth() {
-    const { salesData } = this.props;
-    if (!Array.isArray(salesData) || salesData.length === 0) return [];
+    const { salesData, people} = this.props;
+    
+    if (!Array.isArray(people) || !Array.isArray(salesData)) return {};
+
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
+
     return salesData.filter((entry) => {
       const entryDate = new Date(entry.date);
       return entryDate.getFullYear() === currentYear && entryDate.getMonth() === currentMonth;
@@ -36,35 +39,49 @@ class CompetitionAndCharts extends Component {
   }
 
   getSalespersonTotals() {
-    const { teams } = this.props;
+    const { teams, people } = this.props;
     const filteredData = this.filterSalesDataForCurrentMonth();
-    const totals = {};
-    const allMembers = new Set();
-    teams.forEach((team) => {
-      if (team.members) team.members.forEach((m) => allMembers.add(m));
+
+    const salesSum = {};
+
+    people.forEach((p) => {
+      salesSum[p.name] = 0;
     });
-    allMembers.forEach((member) => {
-      totals[member] = 0;
-    });
-    filteredData.forEach((dayEntry) => {
-      allMembers.forEach((member) => {
-        totals[member] += dayEntry[member] || 0;
+
+    filteredData.forEach((entry) => {
+      people.forEach((p) => {
+        salesSum[p.name] += entry[p.name] || 0;
       });
     });
-    return totals;
+
+    return salesSum;
   }
 
-  getTeamTotals(salespersonTotals) {
+  getSalesTotal(salespersonTotals) {
+    const { teams } = this.props;
+    const salesTotal = {};
+    teams.forEach((team) => {
+
+      team.members.forEach((member) => {
+        salesTotal[member] = salespersonTotals[member] || 0;
+      });
+    });
+
+    return salesTotal;
+  }
+
+  getTeamTotal(salesPeopleTotal){
     const { teams } = this.props;
     const teamTotals = {};
-    teams.forEach((team) => {
-      let total = 0;
-      if (team.members && team.members.length) {
-        team.members.forEach((member) => {
-          total += salespersonTotals[member] || 0;
-        });
-      }
-      teamTotals[team.name] = total;
+    const teamSales = {};
+    const filteredTeams = teams.filter(
+      team => new Date(team.date).getMonth() === new Date().getMonth() && new Date(team.date).getFullYear() === new Date().getFullYear());
+
+    filteredTeams.forEach((team) => {
+      teamTotals[team.name] = 0;
+      team.members.forEach((member) => {
+        teamTotals[team.name] = teamTotals[team.name] + Number(salesPeopleTotal[member]);
+      });
     });
 
     return teamTotals;
@@ -74,7 +91,12 @@ class CompetitionAndCharts extends Component {
     const filteredData = this.filterSalesDataForCurrentMonth();
     const result = [];
     filteredData.forEach((dayEntry) => {
-      const day = { date: new Date(dayEntry.date).toLocaleDateString()};
+      const day = { date: new Date(dayEntry.date).toLocaleDateString('en-US', {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    })};
       if (team.members && team.members.length) {
         team.members.forEach((member) => {
           day[member] = dayEntry[member] || 0;
@@ -225,23 +247,24 @@ class CompetitionAndCharts extends Component {
   render() {
     const { teams } = this.props;
     const salespersonTotals = this.getSalespersonTotals();
-    const teamTotals = this.getTeamTotals(salespersonTotals);
+    const salesTotal = this.getSalesTotal(salespersonTotals);
+    const teamTotal = this.getTeamTotal(salesTotal);
     const now = new Date();
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
     const filteredTeams = teams.filter(
       team => new Date(team.date).getMonth() === new Date().getMonth() && new Date(team.date).getFullYear() === new Date().getFullYear());
-
+    
     if (!teams.length) {
       return <Typography>No teams available. Please add teams first.</Typography>;
     }
-    if (teams.length === 0 || Object.keys(teamTotals).length === 0) {
+    if (teams.length === 0 || Object.keys(salesTotal).length === 0) {
       return <Typography>No sales data available for {currentMonthYear}.</Typography>;
     }
 
     const barData = filteredTeams.map((team) => ({
       team: team.name,
-      totalSales: teamTotals[team.name] || 0,
+      totalSales: teamTotal[team.name] || 0,
       color: team.color || '#8884d8',
     }));
 
@@ -255,7 +278,7 @@ class CompetitionAndCharts extends Component {
           {filteredTeams.sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
             <Paper key={team.name} sx={{ mb: 2, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}>
               <Typography variant="h6" sx={{ color: team.color }}>
-                {team.name} — Total Sales: {teamTotals[team.name] || 0}
+                {team.name} — Total Sales: {teamTotal[team.name] || 0}
               </Typography>
               <Box sx={{ pl: 2, mt: 1 }}>
                 {team.members?.length ? (
