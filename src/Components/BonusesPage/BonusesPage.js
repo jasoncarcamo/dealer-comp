@@ -95,8 +95,22 @@ saveEdit = (updateBonus) => {
 
 
 cancelEdit = () => {
-this.setState({ editingBonus: null });
+    this.setState({ editingBonus: null });
 };
+
+isSameDay(d1, d2) {
+    return d1.toLocaleDateString("en-US", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }) === d2.toLocaleDateString("en-US", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    })
+}
 
 render() {
     const { bonuses, editingBonus } = this.state;
@@ -117,10 +131,10 @@ render() {
                 start_date.setHours(0, 0, 0, 0);
                 end_date.setHours(23, 59, 59, 999); // include the entire end_date day
 
-                if (start_date <= today && end_date >= today || start_date === today && end_date === today) {
+                if (start_date <= today && end_date >= today || this.isSameDay(today, end_date) === true) {
                     current.push(current_bonuses[monthKey]);
-                }
-            }
+                };
+            };
         };
 
         const months = bonuses[yearKey];
@@ -128,9 +142,9 @@ render() {
         for (const monthKey in months) {
             const monthBonuses = months[monthKey];
 
-            for (const b of monthBonuses) {
-                if (new Date(b.end_date) < today) {
-                    past.push(b);
+            for (const bonus of monthBonuses) {
+                if (new Date(bonus.end_date) < today && this.isSameDay(today, new Date(bonus.end_date)) === false) {
+                    past.push(bonus);
                 }
             }
         }
