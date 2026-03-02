@@ -6,9 +6,15 @@ import {
   Paper,
   Box,
   MenuItem,
-  Select
+  Select,
+  IconButton
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import Snackbar from '@mui/material/Snackbar';
 import "./ManageTeamsAndPeople.css"
+import ConfirmationMessage from '../ConfrimationMessage/ConfirmationMessage';
 
 class ManageTeamsAndPeople extends Component {
   constructor(props) {
@@ -25,6 +31,12 @@ class ManageTeamsAndPeople extends Component {
       addTeamNameInput: '',
       addTeamColorInput: '#1976d2',
       addPersonNameInput: '',
+      editingPerson: null,
+      editedName: "",
+      nameError: "",
+      message: "",
+      showSuccess: false,
+      showMessage: false
     };
   }
 
@@ -210,6 +222,59 @@ class ManageTeamsAndPeople extends Component {
       };
   }
 
+  handleSaveName = (person, id) => {
+    const newPerson = {
+      name: this.state.editedName,
+      cars_sold: person.cars_sold,
+      id
+    };
+
+    //this.props.updatePersonName(oldName, this.state.editedName.trim());
+    this.props.editPerson(newPerson, id)
+      .then( updatedPerson => {
+        this.setState({
+          editingPerson: null,
+          editedName: "",
+          nameError: "",
+          showMessage: true,
+        });
+
+        this.props.saveEditedPerson(newPerson)
+      })
+      .catch(err => {
+      })
+  
+  };  
+
+  handleCancelEdit = () => {
+    this.setState({
+      editingPerson: null,
+      editedName: "",
+      nameError: "",
+    });
+  };  
+
+  validateName = (newName, oldName) => {
+    const trimmed = newName.trim();
+  
+    if (!trimmed) return "Name cannot be empty";
+  
+    const exists = this.props.people.some(
+      (p) => p.name.toLowerCase() === trimmed.toLowerCase() && p.name !== oldName
+    );
+  
+    if (exists) return "Name already exists";
+  
+    return "";
+  };  
+
+  onCloseConfirmation = () => {
+    this.setState({
+      showSuccess: false, 
+      showMessage: false
+    })
+  }
+
   render() {
     const { teams, people } = this.props;
     const {
@@ -363,6 +428,13 @@ class ManageTeamsAndPeople extends Component {
           overflowX: 'hidden',
         }}
       >
+
+        <ConfirmationMessage
+          message={"Name changed successfully"}
+          visible={this.state.showMessage}
+          onClose={this.onCloseConfirmation}
+        />
+
         <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 'bold' }}>
           Manage Teams & Salespeople
         </Typography>
@@ -455,63 +527,100 @@ class ManageTeamsAndPeople extends Component {
                 <Typography sx={{ textAlign: 'center', margin: "auto" }}>No unassigned salespeople</Typography>
               ) : (
                 unassignedPeople.map((person) => (
-                  <Box
-                    key={person.name}
-                    sx={{
-                      ...getItemStyle(false),
-                      width: '100%',
-                      minHeight: 40,
-                      margin: '0 auto 6px auto',
-                      padding: '8px 12px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      borderRadius: 1,
-                      backgroundColor: '#f9f9f9',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                      transition: 'background-color 0.2s ease',
-                      '&:hover': { backgroundColor: '#e3f2fd' },
-                      flexWrap: 'wrap',
+                  
+                  <Box key={person.name} sx={{ ...getItemStyle(false), width: '100%', minHeight: 40, margin: '0 auto 6px auto', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 1, backgroundColor: '#f9f9f9', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'background-color 0.2s ease', '&:hover': { backgroundColor: '#e3f2fd' }, flexWrap: 'wrap', }}>
+                    
+                    {this.state.editingPerson === person.name ? (
+                    <TextField
+                    size="small"
+                    value={this.state.editedName}
+                    autoFocus
+                    error={!!this.state.nameError}
+                    helperText={this.state.nameError}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      this.setState({
+                        editedName: value,
+                        nameError: this.validateName(value, person.name),
+                      });
                     }}
-                  >
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !this.state.nameError) {
+                        this.handleSaveName(person, person.id);
+                      }
+                      if (e.key === "Escape") this.handleCancelEdit();
+                    }}
+                    sx={{ flex: 1, minWidth: 120 }}
+                  />
+                  
+                  ) : (
                     <span style={{ fontWeight: 500, flex: 1, wordBreak: 'break-word' }}>
                       {person.name} ({getCarsSold(person.name)} cars sold)
                     </span>
+                  )}
+                    {/* Assign dropdown (disabled while editing) */}
+                    <Select
+                      size="small"
+                      value=""
+                      displayEmpty
+                      disabled={this.state.editingPerson === person.name}
+                      onChange={(e) => this.handleAssignToTeam(person.name, e.target.value)}
+                      sx={{ minWidth: 80 }}
+                    >
+                      <MenuItem value="" disabled>Assign</MenuItem>
+                      {filteredTeams.map((team) => {
+                        const inTeam = team.members.includes(person.name);
+                        return (
+                          <MenuItem key={team.id} value={team.id} disabled={inTeam}>
+                            {team.name}{inTeam ? " (already in)" : ""}
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
 
-                    <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
-                      {/* Assign dropdown */}
-                      <Select
+                    {/* Edit / Save / Cancel */}
+                    {this.state.editingPerson === person.name ? (
+                      <>
+                        <IconButton
+                          size="small"
+                          color="success"
+                          disabled={this.state.nameError || this.state.editedName === person.name}
+                          onClick={() => this.handleSaveName(person, person.id)}
+                        >
+                          <CheckIcon fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                          size="small"
+                          color="default"
+                          onClick={this.handleCancelEdit}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <IconButton
                         size="small"
-                        value="" // default empty
-                        displayEmpty
-                        onChange={(e) => this.handleAssignToTeam(person.name, e.target.value)}
-                        sx={{ minWidth: 80 }}
+                        onClick={() =>
+                          this.setState({
+                            editingPerson: person.name,
+                            editedName: person.name,
+                          })
+                        }
                       >
-                        <MenuItem value="" disabled>Assign</MenuItem>
-                        {filteredTeams.map((team) => {
-                          const inTeam = team.members.includes(person.name);
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    )}
 
-                          return (
-                            <MenuItem key={team.id} value={team.id} disabled={inTeam}>
-                              {team.name}{inTeam ? " (already in)" : ""}
-                            </MenuItem>
-                          );
-                        })}
-                      </Select>
-
-                      {/* Remove person */}
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={() => this.handleRemovePerson(person.name)}
-                        sx={{ minWidth: 28, padding: '2px 6px', border: "none"}}
-                      >
-                        ×
-                      </Button>
-                    </Box>
+                    {/* Remove */}
+                    {!this.state.editingPerson ? <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => this.handleRemovePerson(person.name)}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton> : ""}
                   </Box>
-
                 ))
               )}
             </Box>

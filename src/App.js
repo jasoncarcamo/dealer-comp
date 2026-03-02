@@ -187,6 +187,23 @@ class App extends Component {
       })
   };
 
+  saveEditedPerson = (updatedPerson)=>{
+    const people = this.state.people;
+    const index = people.findIndex( person => updatedPerson.id === person.id);      
+   
+    people.splice(index, 1, updatedPerson);
+    
+    PeopleStorage.setPeople(people);
+    
+    this.setState({
+      people
+    })
+  }
+
+  editPerson = (updatePerson, id) =>{
+    return FetchSalesPeople.updateSalesPersonById(updatePerson, id)
+  }
+
   removePerson = (personIndex) => {
     const person = this.state.people[personIndex];
 
@@ -328,7 +345,9 @@ class App extends Component {
                       removeTeam={this.removeTeam}
                       updateTeam={this.updateTeam}
                       addPerson={this.addPerson}
+                      editPerson={this.editPerson}
                       removePerson={this.removePerson}
+                      saveEditedPerson={this.saveEditedPerson}
                       updateTeamMembers={this.updateTeamMembers}
                       updateTeamNameAndColor={this.updateTeamNameAndColor}
                     />

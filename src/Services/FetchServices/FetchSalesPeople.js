@@ -49,12 +49,11 @@ const FetchSalesPeople = {
                 return res.json();
             });
     },
-    updateSalesPersonById(token, updatedSalesPerson, id){
+    updateSalesPersonById(updatedSalesPerson, id){
         return fetch(`${url}/api/salespeople/${id}`, {
-            method: "POST",
+            method: "PATCH",
             headers: {
-                'content-type': "application/json",
-                'authorization': `bearer ${token}`
+                'content-type': "application/json"
             },
             body: JSON.stringify(updatedSalesPerson)
         })
