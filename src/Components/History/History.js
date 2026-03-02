@@ -684,13 +684,23 @@ html += `</body></html>`;
       {/* Mobile Cards */}
       <Box sx={{ display: { xs: 'block', sm: 'none' }, mb: 4 }}>
         {this.aggregateByMonth().sort((a, b) => (a.name > b.month ? 1 : -1)).map(({ month, totals }) => {
+          const teamsForMonth = teams.filter(team => team.date.slice(0, 7) === month);
+          const filteredSales = teamsForMonth.sort((a, b) => {
+            if(a.name > b.name){
+              return 1;
+            };
+
+            if(a.name < b.name){
+              return -1;
+            }; return 0;
+          })
           const maxSales = Math.max(...Object.values(totals));
           return (
             <Paper key={month} sx={{ p: 2, mb: 2 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {month}
               </Typography>
-              {teams.sort((a, b) => (a.name > b.name ? 1 : -1)).map((team) => {
+              {teamsForMonth.sort((a, b) => (a.name > b.name ? 1 : -1)).map((team) => {
                 const isMax = totals[team.name] === maxSales;
                 const members = team.members || [];
                 return (
@@ -733,6 +743,7 @@ html += `</body></html>`;
             </TableHead>
             <TableBody>
               {this.aggregateByMonth().sort((a, b) => (a.month > b.month ? 1 : -1)).map(({ month, totals }) => {
+                
                 const teamsForMonth = teams.filter(team => team.date.slice(0, 7) === month);
                 const filteredSales = teamsForMonth.sort((a, b) => {
                   if(a.name > b.name){
@@ -760,6 +771,7 @@ html += `</body></html>`;
                     {teamsForMonth.map(team => {
                       const isMax = totals[team.name] === maxSales;
                       const members = team.members || [];
+                      
                       return (
                         <Tooltip
                           key={team.id}
