@@ -77,7 +77,8 @@ class ManageTeamsAndPeople extends Component {
         const teamIndex = personToTeam[personName];
         const team = teams[teamIndex];
         const newMembers = team.members.filter(m => m !== personName);
-        //this.props.updateTeamMembers(teamIndex, newMembers);
+
+        this.props.updateTeamMembers(teamIndex, newMembers);
       }
     }
   };
@@ -239,7 +240,15 @@ class ManageTeamsAndPeople extends Component {
           showMessage: true,
         });
 
-        this.props.saveEditedPerson(newPerson)
+        this.props.saveEditedPerson(newPerson);
+
+        const { teams } = this.props;
+        const teamIndex = personToTeam[updatedPerson.name];
+        const team = teams[teamIndex];
+        const newMembers = team.members.filter(m => m !== updatedPerson.name);
+        const personToTeam = this.getPersonToTeamMap();
+
+        this.props.updateTeamMembers(teamIndex, newMembers);
       })
       .catch(err => {
       })
@@ -599,7 +608,11 @@ class ManageTeamsAndPeople extends Component {
                         </IconButton>
                       </>
                     ) : (
-                      <IconButton
+                      ""
+                    )}
+
+                    {/*
+                        "<IconButton
                         size="small"
                         onClick={() =>
                           this.setState({
@@ -609,8 +622,8 @@ class ManageTeamsAndPeople extends Component {
                         }
                       >
                         <EditIcon fontSize="small" />
-                      </IconButton>
-                    )}
+                      </IconButton>"
+                        */}
 
                     {/* Remove */}
                     {!this.state.editingPerson ? <IconButton

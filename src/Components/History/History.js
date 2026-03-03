@@ -516,8 +516,6 @@ html += `</body></html>`;
     const { teams, people } = this.props;
     const { selectedDate, viewMode, dragListOrder } = this.state;
     const salesForPeriod = this.getSalesForPeriod();
-    const salespersonTotals = this.getSalespersonTotals();
-    const teamTotals = this.getTeamTotals(salespersonTotals);
     const monthlyMemberSales = this.getMonthlySalesByMember();
     let filteredTeam = this.props.teams.filter(
       team => new Date(team.date).getMonth() === new Date(this.state.selectedDate).getMonth()

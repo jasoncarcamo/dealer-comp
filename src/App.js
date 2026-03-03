@@ -88,17 +88,21 @@ class App extends Component {
       .then( data => {
         const teams = data.teams;
         const bonuses = data.bonuses;
+        const people = data.people;
+        const salesData = data.salesData
+
+        console.log(data)
 
         TeamStorage.setTeams(teams);
-        PeopleStorage.setPeople(data.people)
-        SalesStorage.setSale(this.handleSalesData(data.salesData));
+        PeopleStorage.setPeople(people)
+        SalesStorage.setSale(this.handleSalesData(salesData));
         BonusesStorage.setBonuses(bonuses);
 
         this.setState({
-          teams: JSON.parse(TeamStorage.getTeams()),
-          people: JSON.parse(PeopleStorage.getPeople()),
+          teams,
+          people,
           salesData: JSON.parse(SalesStorage.getSales()),
-          bonuses: JSON.parse(BonusesStorage.getBonuses()),
+          bonuses,
           loadingData: false
         });
       });
