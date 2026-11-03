@@ -123,21 +123,22 @@ class ManageTeamsAndPeople extends Component {
         });
     };
 
+    
     saveAddingTeam = () => {
         const name = this.state.addTeamNameInput.trim();
-        const { teams = [] } = this.props;
+        const currentTeams = this.getCurrentTeams();
 
         if (!name) {
             this.showMessage("Please enter a team name.");
             return;
         }
 
-        const exists = teams.some((team) => {
-            return team.name.toLowerCase() === name.toLowerCase();
+        const exists = currentTeams.some((team) => {
+            return team.name.trim().toLowerCase() === name.toLowerCase();
         });
 
         if (exists) {
-            this.showMessage("A team with this name already exists.");
+            this.showMessage("A team with this name already exists for this month.");
             return;
         }
 
@@ -155,6 +156,7 @@ class ManageTeamsAndPeople extends Component {
 
         this.showMessage("Team added successfully.");
     };
+
 
     startAddingPerson = () => {
         this.setState({
@@ -216,28 +218,32 @@ class ManageTeamsAndPeople extends Component {
         });
     };
 
+    
     saveEditingTeam = (team) => {
         const name = this.state.editingTeamName.trim();
         const { teams = [] } = this.props;
+        const currentTeams = this.getCurrentTeams();
 
         if (!name) {
             this.showMessage("Team name cannot be empty.");
             return;
         }
 
-        const exists = teams.some((item) => {
+        const exists = currentTeams.some((item) => {
             return (
                 item.id !== team.id &&
-                item.name.toLowerCase() === name.toLowerCase()
+                item.name.trim().toLowerCase() === name.toLowerCase()
             );
         });
 
         if (exists) {
-            this.showMessage("A team with this name already exists.");
+            this.showMessage("A team with this name already exists for this month.");
             return;
         }
 
-        const index = teams.findIndex((item) => item.id === team.id);
+        const index = teams.findIndex((item) => {
+            return item.id === team.id;
+        });
 
         if (index === -1) {
             return;
@@ -252,6 +258,7 @@ class ManageTeamsAndPeople extends Component {
         this.cancelEditingTeam();
         this.showMessage("Team updated successfully.");
     };
+
 
     handleRemoveTeam = (team) => {
         const confirmed = window.confirm(
@@ -691,6 +698,8 @@ class ManageTeamsAndPeople extends Component {
         const { people = [] } = this.props;
         const currentTeams = this.getCurrentTeams();
         const unassigned = this.getUnassignedPeople(currentTeams);
+
+        console.log("Current Teams:", currentTeams);
 
         const {
             addingTeam,
