@@ -324,6 +324,7 @@ class App extends Component {
                     <BonusesPage
                       teams={this.state.teams}
                       people={this.state.people}
+                      bonuses={this.state.bonuses}
                       salesData={this.state.salesData}
                       addTeam={this.addTeam}
                       removeTeam={this.removeTeam}

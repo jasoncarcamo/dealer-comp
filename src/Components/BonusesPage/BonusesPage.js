@@ -40,6 +40,23 @@ export default class BonusesPage extends Component {
         };
     }
 
+    componentDidMount() {
+        const stored = this.getStoredBonuses();
+
+        console.log(stored)
+        
+        if (!stored || Object.keys(stored).length === 0) {
+            this.setState({
+                loading: true
+            });
+        }
+
+        this.setState({
+            bonuses: stored,
+            laoding: false
+        });
+    }
+
     getStoredBonuses = () => {
         try {
             const stored = BonusesStorage.getBonuses();
@@ -92,7 +109,7 @@ export default class BonusesPage extends Component {
     };
 
     getAllBonuses = () => {
-        const { bonuses } = this.state;
+        const { bonuses } = this.props;
 
         if (Array.isArray(bonuses)) {
             return bonuses;
