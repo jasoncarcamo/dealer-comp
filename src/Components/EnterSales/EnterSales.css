@@ -1,19 +1,641 @@
-.enter-sales-container {
-  padding: 1rem;
+
+/* =========================================
+   ENTER SALES PAGE
+========================================= */
+.enter-sales-dialog .enter-sales-dialog-title.MuiDialogTitle-root {
+    color: #EB0A1E;
+    font-size: 1.15rem;
+    font-weight: 800;
 }
 
-.save-button {
-  background-color: #1976d2;
-  border: none;
-  color: white;
-  font-weight: 600;
-  font-size: 1rem;
-  padding: 0.6rem 1.5rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.enter-sales-page {
+    --sales-red: #eb0a1e;
+    --sales-ink: #191b20;
+    --sales-muted: #68707b;
+    --sales-border: #e7e9ee;
+
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 36px 28px 72px;
+    color: var(--sales-ink);
+    font-family: "Inter", "Roboto", Arial, sans-serif;
 }
 
-.save-button:hover {
-  background-color: #115293;
+.enter-sales-page *,
+.enter-sales-page *::before,
+.enter-sales-page *::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.enter-sales-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.enter-sales-eyebrow {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--sales-red);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.enter-sales-header h1 {
+    margin: 0;
+    color: var(--sales-ink);
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1.25;
+}
+
+.enter-sales-header p {
+    margin: 10px 0 0;
+    color: var(--sales-muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.enter-sales-status.MuiChip-root {
+    height: 36px;
+    padding: 0 8px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.enter-sales-status--saved.MuiChip-root {
+    background: #eaf6ee;
+    color: #287346;
+    border: 1px solid #cce8d5;
+}
+
+.enter-sales-status--unsaved.MuiChip-root {
+    background: #fff3e5;
+    color: #9a5b16;
+    border: 1px solid #f5dbb7;
+}
+
+/* =========================================
+   DATE SELECTION
+========================================= */
+
+.enter-sales-date-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    background: #ffffff;
+    border: 1px solid var(--sales-border);
+    border-radius: 14px;
+    box-shadow: 0 5px 22px rgba(0, 0, 0, 0.025);
+}
+
+.enter-sales-date-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.enter-sales-date-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    background: #fff0f1;
+    color: var(--sales-red);
+    border-radius: 12px;
+}
+
+.enter-sales-date-heading h2 {
+    margin: 0 0 5px;
+    color: var(--sales-ink);
+    font-size: 0.98rem;
+    font-weight: 800;
+}
+
+.enter-sales-date-heading p {
+    margin: 0;
+    color: var(--sales-muted);
+    font-size: 0.82rem;
+}
+
+.enter-sales-date-input .MuiOutlinedInput-root {
+    border-radius: 8px;
+}
+
+.enter-sales-date-input .MuiOutlinedInput-root.Mui-focused fieldset {
+    border-color: var(--sales-red);
+}
+
+/* =========================================
+   DAILY SUMMARY
+========================================= */
+
+.enter-sales-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 35px;
+}
+
+.enter-sales-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid var(--sales-border);
+    border-radius: 14px;
+    box-shadow: 0 5px 22px rgba(0, 0, 0, 0.025);
+}
+
+.enter-sales-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    background: #fff0f1;
+    color: var(--sales-red);
+    border-radius: 12px;
+}
+
+.enter-sales-stat-icon .MuiSvgIcon-root {
+    font-size: 25px;
+}
+
+.enter-sales-stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.enter-sales-stat-content span {
+    color: var(--sales-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.enter-sales-stat-content strong {
+    color: var(--sales-ink);
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+/* =========================================
+   SALES ENTRY SECTION
+========================================= */
+
+.enter-sales-entry-section {
+    background: #ffffff;
+    border: 1px solid var(--sales-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 5px 22px rgba(0, 0, 0, 0.025);
+}
+
+.enter-sales-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px;
+}
+
+.enter-sales-section-heading h2 {
+    margin: 0;
+    color: var(--sales-ink);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.enter-sales-section-heading p {
+    margin: 7px 0 0;
+    color: var(--sales-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.enter-sales-count-chip.MuiChip-root {
+    background: #f4f5f7;
+    color: #535b65;
+    border: 1px solid #e9ebef;
+    border-radius: 7px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+/* =========================================
+   TABLE
+========================================= */
+
+.enter-sales-table-container.MuiPaper-root {
+    max-height: 540px;
+    border-top: 1px solid var(--sales-border);
+    border-bottom: 1px solid var(--sales-border);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.enter-sales-table-container .MuiTable-root {
+    min-width: 320px;
+}
+
+.enter-sales-table-container .MuiTableCell-head {
+    padding: 15px 24px;
+    background: #f8f9fb;
+    color: #505965;
+    border-bottom: 1px solid var(--sales-border);
+    font-size: 0.73rem;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.enter-sales-table-container .MuiTableCell-body {
+    padding: 13px 24px;
+    border-bottom: 1px solid #f0f1f4;
+}
+
+.enter-sales-table-container .MuiTableRow-root:hover {
+    background: #fffafa;
+}
+
+/* =========================================
+   SALESPERSON ROW
+========================================= */
+
+.enter-sales-person {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+}
+
+.enter-sales-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background: #f0f1f4;
+    color: #555e69;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 800;
+}
+
+.enter-sales-person-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.enter-sales-person-details strong {
+    overflow-wrap: anywhere;
+    color: #242830;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.enter-sales-person-details span {
+    color: #8a929c;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+/* =========================================
+   NUMERIC INPUT
+========================================= */
+
+.enter-sales-number-input.MuiTextField-root {
+    width: 105px;
+}
+
+.enter-sales-number-input .MuiOutlinedInput-root {
+    background: #ffffff;
+    border-radius: 8px;
+}
+
+.enter-sales-number-input .MuiOutlinedInput-root.Mui-focused fieldset {
+    border-color: var(--sales-red);
+    border-width: 2px;
+}
+
+.enter-sales-number-input input {
+    padding: 10px 12px;
+    color: #22252b;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.enter-sales-number-input input::-webkit-inner-spin-button,
+.enter-sales-number-input input::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+/* =========================================
+   FOOTER ACTIONS
+========================================= */
+
+.enter-sales-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 24px;
+}
+
+.enter-sales-footer-note.MuiTypography-root {
+    color: var(--sales-muted);
+    font-size: 0.8rem;
+    line-height: 1.6;
+}
+
+.enter-sales-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.enter-sales-reset-button.MuiButton-root {
+    min-height: 42px;
+    padding: 10px 17px;
+    color: #555e69;
+    border-color: #d8dce2;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.enter-sales-reset-button.MuiButton-root:hover {
+    background: #f5f6f8;
+    border-color: #b9bec7;
+}
+
+.enter-sales-save-button.MuiButton-root {
+    min-height: 42px;
+    padding: 10px 20px;
+    background: var(--sales-red);
+    color: #ffffff;
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.enter-sales-save-button.MuiButton-root {
+    background: #c5091b;
+    box-shadow: none;
+}
+
+.enter-sales-save-button.MuiButton-root:hover {
+    background: #c5091b;
+    box-shadow: none;
+}
+
+.enter-sales-save-button.MuiButton-root.Mui-disabled {
+    background: #e8e9ec;
+    color: #a1a6ae;
+}
+
+/* =========================================
+   CONFIRMATION DIALOG
+========================================= */
+
+.enter-sales-dialog .MuiDialog-paper {
+    padding: 10px;
+    border-radius: 14px;
+}
+
+.enter-sales-dialog .MuiDialogTitle-root {
+    color: #20242a;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.enter-sales-dialog .MuiDialogContent-root {
+    color: #68707b;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.enter-sales-dialog-total.MuiTypography-root {
+    margin-top: 18px;
+    padding: 14px;
+    background: #fff4f5;
+    border-radius: 8px;
+    color: #ad1020;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.enter-sales-dialog .MuiDialogActions-root {
+    padding: 15px;
+    gap: 8px;
+}
+
+.enter-sales-dialog .MuiDialogActions-root .MuiButton-root {
+    text-transform: none;
+    font-weight: 800;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media screen and (max-width: 900px) {
+    .enter-sales-page {
+        padding: 28px 20px 55px;
+    }
+
+    .enter-sales-summary {
+        gap: 12px;
+    }
+
+    .enter-sales-stat-card {
+        gap: 12px;
+        padding: 18px;
+    }
+
+    .enter-sales-stat-icon {
+        width: 43px;
+        height: 43px;
+    }
+
+    .enter-sales-stat-content strong {
+        font-size: 1.5rem;
+    }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media screen and (max-width: 650px) {
+    .enter-sales-page {
+        padding: 22px 14px 45px;
+    }
+
+    .enter-sales-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .enter-sales-header h1 {
+        font-size: 1.65rem;
+    }
+
+    .enter-sales-date-panel {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px;
+    }
+
+    .enter-sales-date-input.MuiTextField-root {
+        width: 100%;
+    }
+
+    .enter-sales-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .enter-sales-stat-card {
+        padding: 15px;
+    }
+
+    .enter-sales-stat-card:last-child {
+        grid-column: span 2;
+    }
+
+    .enter-sales-stat-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .enter-sales-stat-icon .MuiSvgIcon-root {
+        font-size: 21px;
+    }
+
+    .enter-sales-stat-content strong {
+        font-size: 1.5rem;
+    }
+
+    .enter-sales-section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .enter-sales-table-container .MuiTableCell-head,
+    .enter-sales-table-container .MuiTableCell-body {
+        padding: 12px 14px;
+    }
+
+    .enter-sales-footer {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+    }
+
+    .enter-sales-actions {
+        width: 100%;
+    }
+
+    .enter-sales-actions .MuiButton-root {
+        flex: 1;
+    }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media screen and (max-width: 400px) {
+    .enter-sales-page {
+        padding: 18px 10px 40px;
+    }
+
+    .enter-sales-header h1 {
+        font-size: 1.45rem;
+    }
+
+    .enter-sales-stat-card {
+        padding: 12px;
+        gap: 9px;
+    }
+
+    .enter-sales-stat-content span {
+        font-size: 0.7rem;
+    }
+
+    .enter-sales-person {
+        gap: 9px;
+    }
+
+    .enter-sales-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .enter-sales-number-input.MuiTextField-root {
+        width: 78px;
+    }
+
+    .enter-sales-actions {
+        flex-direction: column;
+    }
+
+    .enter-sales-actions .MuiButton-root {
+        width: 100%;
+    }
+}
+
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
+.enter-sales-page button:focus-visible,
+.enter-sales-page input:focus-visible {
+    outline: 3px solid rgba(235, 10, 30, 0.5);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .enter-sales-page *,
+    .enter-sales-page *::before,
+    .enter-sales-page *::after {
+        transition: none !important;
+        animation: none !important;
+    }
 }

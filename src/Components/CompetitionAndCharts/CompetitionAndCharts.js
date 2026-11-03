@@ -1,372 +1,869 @@
-import React, { Component, createRef } from 'react';
-import { Typography, Box, Paper, Button, Stack } from '@mui/material';
+
+import React, { Component, createRef } from "react";
+
 import {
-  BarChart,
-  Bar,
-  Cell,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from 'recharts';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+    Button,
+    Chip,
+    Paper
+} from "@mui/material";
+
+import {
+    BarChart,
+    Bar,
+    Cell,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    LineChart,
+    Line,
+    Legend
+} from "recharts";
+
+import DirectionsCarRoundedIcon from "@mui/icons-material/DirectionsCarRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import PrintRoundedIcon from "@mui/icons-material/PrintRounded";
+import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+
 import "./CompetitionAndCharts.css";
 
 class CompetitionAndCharts extends Component {
-  constructor(props) {
-    super(props);
-    this.lineChartsRef = createRef();
-  }
+    constructor(props) {
+        super(props);
 
-  filterSalesDataForCurrentMonth() {
-    const { salesData, people} = this.props;
-    
-    if (!Array.isArray(people) || !Array.isArray(salesData)) return {};
+        this.state = {
+            downloading: false
+        };
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-
-    return salesData.filter((entry) => {
-      const entryDate = new Date(entry.date);
-      return entryDate.getFullYear() === currentYear && entryDate.getMonth() === currentMonth;
-    });
-  }
-
-  getSalespersonTotals() {
-    const { teams, people } = this.props;
-    const filteredData = this.filterSalesDataForCurrentMonth();
-
-    const salesSum = {};
-
-    people.forEach((p) => {
-      salesSum[p.name] = 0;
-    });
-
-    filteredData.forEach((entry) => {
-      people.forEach((p) => {
-        salesSum[p.name] += entry[p.name] || 0;
-      });
-    });
-
-    return salesSum;
-  }
-
-  getSalesTotal(salespersonTotals) {
-    const { teams } = this.props;
-    const salesTotal = {};
-    teams.forEach((team) => {
-
-      team.members.forEach((member) => {
-        salesTotal[member] = salespersonTotals[member] || 0;
-      });
-    });
-
-    return salesTotal;
-  }
-
-  getTeamTotal(salesPeopleTotal){
-    const { teams } = this.props;
-    const teamTotals = {};
-    const teamSales = {};
-    const filteredTeams = teams.filter(
-      team => new Date(team.date).getMonth() === new Date().getMonth() && new Date(team.date).getFullYear() === new Date().getFullYear());
-
-    filteredTeams.forEach((team) => {
-      teamTotals[team.name] = 0;
-      team.members.forEach((member) => {
-        teamTotals[team.name] = teamTotals[team.name] + Number(salesPeopleTotal[member]);
-      });
-    });
-
-    return teamTotals;
-  }
-
-  aggregateSalesBySalesperson(team) {
-    const filteredData = this.filterSalesDataForCurrentMonth();
-    const result = [];
-    filteredData.forEach((dayEntry) => {
-      const day = { date: new Date(dayEntry.date).toLocaleDateString('en-US', {
-        timeZone: "UTC",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    })};
-      if (team.members && team.members.length) {
-        team.members.forEach((member) => {
-          day[member] = dayEntry[member] || 0;
-        });
-      }
-      result.push(day);
-    });
-    result.sort((a, b) => (new Date(a.date) - new Date(b.date)));
-
-    return result;
-  }
-
-  generateColors(count) {
-    const baseColors = [
-  '#4B79A1', // muted blue
-  '#6C9A8B', // soft green
-  '#D4A373', // warm tan
-  '#7DA6C1', // steel blue
-  '#92A78C', // sage green
-  '#C7C98E', // soft yellow-green
-  '#6E6E6E', // gray
-];;
-    return Array.from({ length: count }, (_, i) => baseColors[i % baseColors.length]);
-  }
-
-  CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length && this.props.teams.length) {
-      const teamName = label;
-      const team = this.props.teams.filter(
-        team => new Date(team.date).getMonth() === new Date().getMonth() && new Date(team.date).getFullYear() === new Date().getFullYear()).find((t) => t.name === teamName);
-      const totalSales = payload[0].value;
-      return (
-        <Paper elevation={3} sx={{ padding: 1, backgroundColor: 'white', border: '1px solid #ccc', maxWidth: 250 }}>
-          <Typography variant="subtitle1" fontWeight="bold">Team: {teamName}</Typography>
-          <Typography variant="body2">Total Sales: {totalSales}</Typography>
-          <Typography variant="body2" mt={1} fontWeight="bold">Members:</Typography>
-          {team?.members?.length ? (
-            team.members.map((member) => <Typography key={member} variant="body2">{member}</Typography>)
-          ) : (
-            <Typography variant="body2" color="text.secondary">No members</Typography>
-          )}
-        </Paper>
-      );
+        this.reportRef = createRef();
     }
-    return null;
-  };
 
-  handlePrint = () => {
-    const printContents = this.lineChartsRef.current.innerHTML;
-    const printWindow = window.open('', '', 'height=800,width=1000');
-    printWindow.document.write('<html><head><title>Print Charts</title></head><body>');
-    printWindow.document.write(printContents);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-  };
+    getCurrentMonthKey = () => {
+        const now = new Date();
 
-  handleDownload = async () => {
-  const chartsEl = this.lineChartsRef.current;
-
-  // 1️⃣ Reduce all vertical spacing temporarily
-  const allContainers = chartsEl.querySelectorAll('*'); // capture all descendants
-  const originalStyles = [];
-
-  allContainers.forEach((el, i) => {
-    const style = window.getComputedStyle(el);
-    originalStyles[i] = {
-      marginTop: style.marginTop,
-      marginBottom: style.marginBottom,
-      paddingTop: style.paddingTop,
-      paddingBottom: style.paddingBottom,
+        return [
+            now.getFullYear(),
+            String(now.getMonth() + 1).padStart(2, "0")
+        ].join("-");
     };
-    el.style.marginTop = '0px';
-    el.style.marginBottom = '2px'; // minimal gap
-    el.style.paddingTop = '0px';
-    el.style.paddingBottom = '0px';
-  });
 
-  // 2️⃣ Capture charts
-  const canvas = await html2canvas(chartsEl, {
-    scale: 1,
-    backgroundColor: '#ffffff',
-    useCORS: true,
-  });
+    normalizeDate = (value) => {
+        if (!value) {
+            return "";
+        }
 
-  // 3️⃣ Restore original spacing
-  allContainers.forEach((el, i) => {
-    el.style.marginTop = originalStyles[i].marginTop;
-    el.style.marginBottom = originalStyles[i].marginBottom;
-    el.style.paddingTop = originalStyles[i].paddingTop;
-    el.style.paddingBottom = originalStyles[i].paddingBottom;
-  });
+        if (typeof value === "string") {
+            const match = value.match(/^\d{4}-\d{2}-\d{2}/);
 
-  // 4️⃣ Prepare PDF
-  const imgData = canvas.toDataURL('image/jpeg', 0.7);
-  const pdf = new jsPDF('p', 'mm', 'a4');
-
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
-
-  const imgWidth = pdfWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  let heightLeft = imgHeight;
-  let position = 0;
-
-  // 5️⃣ First page
-  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-  heightLeft -= pdfHeight;
-
-  // 6️⃣ Additional pages if needed
-  const pageCanvas = document.createElement('canvas');
-  const pageCtx = pageCanvas.getContext('2d');
-
-  while (heightLeft > 0) {
-    position += pdfHeight;
-
-    pageCanvas.width = canvas.width;
-    pageCanvas.height = (pdfHeight * canvas.width) / pdfWidth;
-
-    pageCtx.fillStyle = 'white';
-    pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-
-    pageCtx.drawImage(
-      canvas,
-      0,
-      (position * canvas.width) / pdfWidth,
-      canvas.width,
-      pageCanvas.height,
-      0,
-      0,
-      canvas.width,
-      pageCanvas.height
-    );
-
-    const pageData = pageCanvas.toDataURL('image/jpeg', 0.7);
-    pdf.addPage();
-    pdf.addImage(pageData, 'JPEG', 0, 0, imgWidth, pdfHeight);
-
-    heightLeft -= pdfHeight;
-  }
-
-  // 7️⃣ Save PDF
-  pdf.save('line_charts.pdf');
-};
-
-
-  render() {
-    const { teams } = this.props;
-    const salespersonTotals = this.getSalespersonTotals();
-    const salesTotal = this.getSalesTotal(salespersonTotals);
-    const teamTotal = this.getTeamTotal(salesTotal);
-    const now = new Date();
-    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-    const filteredTeams = teams.filter(
-      team => new Date(team.date).getMonth() === new Date().getMonth() && new Date(team.date).getFullYear() === new Date().getFullYear());
-    
-    if (!teams.length) {
-      return <Typography>No teams available. Please add teams first.</Typography>;
-    }
-    if (teams.length === 0 || Object.keys(salesTotal).length === 0) {
-      return <Typography>No sales data available for {currentMonthYear}.</Typography>;
-    }
-
-    const barData = filteredTeams.map((team) => ({
-      team: team.name,
-      totalSales: teamTotal[team.name] || 0,
-      color: team.color || '#8884d8',
-    }));
-
-    return (
-      <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 2 }}>
-        {filteredTeams.length > 0 ? (
-          <Typography variant="h5" gutterBottom>Team Sales ({currentMonthYear})</Typography>
-        ) : <Typography variant="h5" gutterBottom>There are currently no teams for ({currentMonthYear})</Typography>}
-
-        <Box sx={{ mb: 4 }}>
-          {filteredTeams.sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
-            <Paper key={team.name} sx={{ mb: 2, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}>
-              <Typography variant="h6" sx={{ color: team.color }}>
-                {team.name} — Total Sales: {teamTotal[team.name] || 0}
-              </Typography>
-              <Box sx={{ pl: 2, mt: 1 }}>
-                {team.members?.length ? (
-                  team.members.map((member) => (
-                    <Typography key={member} variant="body2" sx={{ color: '#555' }}>
-                      {member}: {salespersonTotals[member] || 0}
-                    </Typography>
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary">No members</Typography>
-                )}
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-
-        {/* Bar chart */}
-        {filteredTeams.length > 0 ? (<ResponsiveContainer width="100%" height={400}>
-          <BarChart data={barData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} barCategoryGap="25%">
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="team" tick={{ textAnchor: 'middle' }} />
-            <YAxis allowDecimals={false} />
-            <Tooltip content={<this.CustomTooltip />} />
-            <Legend />
-            <Bar dataKey="totalSales" name="Total Sales">
-              {barData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>) : ""}
-
-        {/* Controls */}
-        {filteredTeams.length > 0 ? (<Stack direction="row" spacing={2} sx={{ mt: 4 }}>
-          <Button variant="contained" onClick={this.handlePrint}>Print Line Charts</Button>
-          <Button variant="outlined" onClick={this.handleDownload}>Download as PDF</Button>
-        </Stack>) : ""}
-
-        {/* Line charts section */}
-        <Box sx={{ mt: 1 }} ref={this.lineChartsRef}>
-          {filteredTeams.length > 0 ? (<Typography variant="h5" gutterBottom>
-            Salesperson Daily Sales by Teams ({currentMonthYear})
-          </Typography>) : ""}
-          {filteredTeams.map((team) => {
-            if (!team.members || team.members.length === 0) {
-              return (
-                <Typography key={team.name} color="text.secondary" sx={{ mb: 3 }}>
-                  No members in team "{team.name}" to display sales.
-                </Typography>
-              );
+            if (match) {
+                return match[0];
             }
-            const salesDataPerSalesperson = this.aggregateSalesBySalesperson(team);
-            const colors = this.generateColors(team.members.length);
-            return (
-              <Paper
-                key={team.id}
-                sx={{ mb: 5, p: 2, borderLeft: `6px solid ${team.color}`, boxShadow: 1 }}
-                aria-label={`Salesperson daily sales for team ${team.name}`}
-              >
-                <Typography variant="h6" sx={{ color: team.color, mb: 2 }}>
-                  {team.name} - Salesperson Daily Sales
-                </Typography>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={salesDataPerSalesperson} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    {team.members.map((member, idx) => (
-                      <Line
-                        key={member}
-                        type="monotone"
-                        dataKey={member}
-                        stroke={colors[idx]}
-                        dot={true}
-                        strokeWidth={2}
-                      />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              </Paper>
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return "";
+        }
+
+        return [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0")
+        ].join("-");
+    };
+
+    getMonthLabel = () => {
+        const now = new Date();
+
+        return now.toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric"
+        });
+    };
+
+    getCurrentTeams = () => {
+        const { teams = [] } = this.props;
+        const month = this.getCurrentMonthKey();
+
+        return teams
+            .filter((team) => {
+                return this.normalizeDate(team.date).slice(0, 7) === month;
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+    };
+
+    getCurrentSalesData = () => {
+        const { salesData = [] } = this.props;
+        const month = this.getCurrentMonthKey();
+
+        return salesData
+            .filter((entry) => {
+                return this.normalizeDate(entry.date).slice(0, 7) === month;
+            })
+            .sort((a, b) => {
+                return this.normalizeDate(a.date).localeCompare(
+                    this.normalizeDate(b.date)
+                );
+            });
+    };
+
+    getSalespersonTotals = (teams, salesData) => {
+        const totals = {};
+
+        teams.forEach((team) => {
+            (team.members || []).forEach((member) => {
+                totals[member] = 0;
+            });
+        });
+
+        salesData.forEach((entry) => {
+            Object.keys(totals).forEach((member) => {
+                const value = Number(entry[member] || 0);
+
+                if (Number.isFinite(value)) {
+                    totals[member] += value;
+                }
+            });
+        });
+
+        return totals;
+    };
+
+    getTeamResults = (teams, salespersonTotals) => {
+        return teams.map((team) => {
+            const members = (team.members || [])
+                .map((name) => ({
+                    name,
+                    sales: salespersonTotals[name] || 0
+                }))
+                .sort((a, b) => {
+                    return b.sales - a.sales ||
+                        a.name.localeCompare(b.name);
+                });
+
+            const total = members.reduce((sum, member) => {
+                return sum + member.sales;
+            }, 0);
+
+            return {
+                id: team.id,
+                name: team.name,
+                color: team.color || "#64748b",
+                members,
+                total
+            };
+        }).sort((a, b) => {
+            return b.total - a.total ||
+                a.name.localeCompare(b.name);
+        });
+    };
+
+    getDailySales = (team, salesData) => {
+        return salesData.map((entry) => {
+            const normalized = this.normalizeDate(entry.date);
+
+            const row = {
+                date: normalized.slice(8, 10)
+            };
+
+            team.members.forEach((member) => {
+                row[member.name] = Number(entry[member.name] || 0);
+            });
+
+            return row;
+        });
+    };
+
+    getSummary = (results) => {
+        const uniquePeople = new Set();
+
+        results.forEach((team) => {
+            team.members.forEach((member) => {
+                uniquePeople.add(member.name);
+            });
+        });
+
+        return {
+            totalSales: results.reduce((sum, team) => {
+                return sum + team.total;
+            }, 0),
+            teamCount: results.length,
+            salespersonCount: uniquePeople.size,
+            topSales: Math.max(
+                0,
+                ...results.map((team) => team.total)
+            )
+        };
+    };
+
+    getLineColors = () => {
+        return [
+            "#4779a8",
+            "#508c78",
+            "#9476ad",
+            "#b28c4e",
+            "#4c8f9b",
+            "#6c7793",
+            "#8a8f58",
+            "#8b6f79"
+        ];
+    };
+
+    renderBarTooltip = ({ active, payload, label }) => {
+        if (!active || !payload || !payload.length) {
+            return null;
+        }
+
+        const results = this.getTeamResults(
+            this.getCurrentTeams(),
+            this.getSalespersonTotals(
+                this.getCurrentTeams(),
+                this.getCurrentSalesData()
+            )
+        );
+
+        const team = results.find((item) => item.name === label);
+
+        return (
+            <div className="competition-chart-tooltip">
+                <strong>{label}</strong>
+
+                <p>
+                    Total Sales: {payload[0].value}
+                </p>
+
+                {team && (
+                    <span>
+                        {team.members.length} salespeople
+                    </span>
+                )}
+            </div>
+        );
+    };
+
+    handlePrint = async () => {
+        const element = this.reportRef.current;
+
+        if (!element) {
+            return;
+        }
+
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 1.5,
+                backgroundColor: "#ffffff",
+                useCORS: true
+            });
+
+            const image = canvas.toDataURL("image/png");
+
+            const printWindow = window.open(
+                "",
+                "_blank",
+                "width=1100,height=850"
             );
-          })}
-        </Box>
-      </Box>
-    );
-  }
+
+            if (!printWindow) {
+                window.alert("Please allow pop-ups to print the charts.");
+                return;
+            }
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head>
+                        <meta charset="UTF-8" />
+                        <title>Sales Competition Charts</title>
+                        <style>
+                            body {
+                                margin: 0;
+                                padding: 15px;
+                                background: white;
+                            }
+
+                            img {
+                                display: block;
+                                width: 100%;
+                                height: auto;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${image}" alt="Sales competition charts" />
+                    </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+
+            const printImage = printWindow.document.querySelector("img");
+
+            printImage.onload = () => {
+                printWindow.focus();
+                printWindow.print();
+            };
+
+            if (printImage.complete) {
+                printWindow.focus();
+                printWindow.print();
+            }
+        } catch (error) {
+            console.error("Unable to print charts:", error);
+            window.alert("Unable to prepare charts for printing.");
+        }
+    };
+
+    handleDownload = async () => {
+        const element = this.reportRef.current;
+
+        if (!element || this.state.downloading) {
+            return;
+        }
+
+        this.setState({ downloading: true });
+
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 1.5,
+                backgroundColor: "#ffffff",
+                useCORS: true,
+                scrollY: -window.scrollY
+            });
+
+            const pdf = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4"
+            });
+
+            const margin = 10;
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            const contentWidth = pageWidth - margin * 2;
+            const contentHeight = pageHeight - margin * 2;
+
+            const pageHeightPixels = Math.floor(
+                canvas.width * contentHeight / contentWidth
+            );
+
+            let offset = 0;
+            let page = 0;
+
+            while (offset < canvas.height) {
+                const sliceHeight = Math.min(
+                    pageHeightPixels,
+                    canvas.height - offset
+                );
+
+                const pageCanvas = document.createElement("canvas");
+
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = sliceHeight;
+
+                const context = pageCanvas.getContext("2d");
+
+                context.fillStyle = "#ffffff";
+                context.fillRect(
+                    0,
+                    0,
+                    pageCanvas.width,
+                    pageCanvas.height
+                );
+
+                context.drawImage(
+                    canvas,
+                    0,
+                    offset,
+                    canvas.width,
+                    sliceHeight,
+                    0,
+                    0,
+                    canvas.width,
+                    sliceHeight
+                );
+
+                if (page > 0) {
+                    pdf.addPage();
+                }
+
+                const imageData = pageCanvas.toDataURL(
+                    "image/jpeg",
+                    0.88
+                );
+
+                const imageHeight = (
+                    sliceHeight * contentWidth / canvas.width
+                );
+
+                pdf.addImage(
+                    imageData,
+                    "JPEG",
+                    margin,
+                    margin,
+                    contentWidth,
+                    imageHeight
+                );
+
+                offset += sliceHeight;
+                page += 1;
+            }
+
+            pdf.save(
+                `sales-competition-${this.getCurrentMonthKey()}.pdf`
+            );
+        } catch (error) {
+            console.error("Unable to generate PDF:", error);
+            window.alert("Unable to download the charts.");
+        } finally {
+            this.setState({ downloading: false });
+        }
+    };
+
+    renderSummary = (results) => {
+        const summary = this.getSummary(results);
+
+        const cards = [
+            {
+                label: "Total Vehicles Sold",
+                value: summary.totalSales,
+                icon: <DirectionsCarRoundedIcon />
+            },
+            {
+                label: "Competing Teams",
+                value: summary.teamCount,
+                icon: <GroupsRoundedIcon />
+            },
+            {
+                label: "Leading Team Sales",
+                value: summary.topSales,
+                icon: <EmojiEventsRoundedIcon />
+            }
+        ];
+
+        return (
+            <section
+                className="competition-summary"
+                aria-label="Monthly sales summary"
+            >
+                {cards.map((card) => (
+                    <article
+                        className="competition-stat-card"
+                        key={card.label}
+                    >
+                        <div className="competition-stat-icon">
+                            {card.icon}
+                        </div>
+
+                        <div className="competition-stat-content">
+                            <span>{card.label}</span>
+                            <strong>{card.value}</strong>
+                        </div>
+                    </article>
+                ))}
+            </section>
+        );
+    };
+
+    renderTeamCard = (team, index, topSales) => {
+        const isWinner = (
+            team.total > 0 &&
+            team.total === topSales
+        );
+
+        return (
+            <article
+                key={team.id || team.name}
+                className={`competition-team-card ${isWinner ? "competition-team-card--leader" : ""}`}
+                style={{
+                    "--competition-team-color": team.color
+                }}
+            >
+                <div className="competition-team-card-header">
+                    <div className="competition-team-title">
+                        <span className="competition-team-dot" />
+
+                        <div>
+                            <h3>{team.name}</h3>
+                            <span>
+                                {team.members.length} salespeople
+                            </span>
+                        </div>
+                    </div>
+
+                    {isWinner ? (
+                        <Chip
+                            icon={<EmojiEventsRoundedIcon />}
+                            label="Leading"
+                            className="competition-leader-chip"
+                        />
+                    ) : (
+                        <span className="competition-team-rank">
+                            #{index + 1}
+                        </span>
+                    )}
+                </div>
+
+                <div className="competition-team-total">
+                    <span>Vehicles Sold</span>
+                    <strong>{team.total}</strong>
+                </div>
+
+                <div className="competition-team-members">
+                    {team.members.map((member) => (
+                        <div
+                            className="competition-team-member"
+                            key={member.name}
+                        >
+                            <span>{member.name}</span>
+                            <strong>{member.sales}</strong>
+                        </div>
+                    ))}
+                </div>
+            </article>
+        );
+    };
+
+    renderBarChart = (results) => {
+        const data = results.map((team) => ({
+            team: team.name,
+            totalSales: team.total,
+            color: team.color
+        }));
+
+        return (
+            <section className="competition-section">
+                <div className="competition-section-heading">
+                    <div>
+                        <h2>Team Sales Comparison</h2>
+                        <p>
+                            Compare total vehicle sales across
+                            all teams this month.
+                        </p>
+                    </div>
+
+                    <Chip
+                        label="Monthly"
+                        className="competition-section-chip"
+                    />
+                </div>
+
+                <Paper
+                    elevation={0}
+                    className="competition-chart-card"
+                >
+                    <div className="competition-chart-container">
+                        <ResponsiveContainer width="100%" height={350}>
+                            <BarChart
+                                data={data}
+                                margin={{
+                                    top: 15,
+                                    right: 20,
+                                    left: 0,
+                                    bottom: 10
+                                }}
+                                barCategoryGap="28%"
+                            >
+                                <CartesianGrid
+                                    stroke="#edf0f3"
+                                    strokeDasharray="3 3"
+                                    vertical={false}
+                                />
+
+                                <XAxis
+                                    dataKey="team"
+                                    tick={{
+                                        fill: "#68707b",
+                                        fontSize: 12
+                                    }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+
+                                <YAxis
+                                    allowDecimals={false}
+                                    tick={{
+                                        fill: "#68707b",
+                                        fontSize: 12
+                                    }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+
+                                <Tooltip
+                                    content={this.renderBarTooltip}
+                                    cursor={{
+                                        fill: "#f8f9fb"
+                                    }}
+                                />
+
+                                <Bar
+                                    dataKey="totalSales"
+                                    name="Vehicles Sold"
+                                    radius={[6, 6, 0, 0]}
+                                    maxBarSize={90}
+                                >
+                                    {data.map((entry, index) => (
+                                        <Cell
+                                            key={`team-bar-${index}`}
+                                            fill={entry.color}
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </Paper>
+            </section>
+        );
+    };
+
+    renderLineCharts = (results, salesData) => {
+        const colors = this.getLineColors();
+
+        return (
+            <section className="competition-section">
+                <div className="competition-section-heading">
+                    <div>
+                        <h2>Daily Sales Performance</h2>
+                        <p>
+                            Individual salesperson performance
+                            throughout the month.
+                        </p>
+                    </div>
+
+                    <TrendingUpRoundedIcon
+                        className="competition-section-icon"
+                    />
+                </div>
+
+                <div className="competition-line-grid">
+                    {results.map((team) => {
+                        const data = this.getDailySales(
+                            team,
+                            salesData
+                        );
+
+                        return (
+                            <Paper
+                                elevation={0}
+                                className="competition-line-card"
+                                key={team.id || team.name}
+                            >
+                                <div className="competition-line-header">
+                                    <span
+                                        className="competition-line-color"
+                                        style={{
+                                            backgroundColor: team.color
+                                        }}
+                                    />
+
+                                    <div>
+                                        <h3>{team.name}</h3>
+                                        <p>Daily vehicle sales by salesperson</p>
+                                    </div>
+                                </div>
+
+                                {team.members.length === 0 ? (
+                                    <div className="competition-chart-empty">
+                                        No salespeople assigned to this team.
+                                    </div>
+                                ) : data.length === 0 ? (
+                                    <div className="competition-chart-empty">
+                                        No daily sales recorded this month.
+                                    </div>
+                                ) : (
+                                    <div className="competition-line-chart">
+                                        <ResponsiveContainer
+                                            width="100%"
+                                            height={270}
+                                        >
+                                            <LineChart
+                                                data={data}
+                                                margin={{
+                                                    top: 12,
+                                                    right: 18,
+                                                    left: -15,
+                                                    bottom: 5
+                                                }}
+                                            >
+                                                <CartesianGrid
+                                                    stroke="#edf0f3"
+                                                    strokeDasharray="3 3"
+                                                    vertical={false}
+                                                />
+
+                                                <XAxis
+                                                    dataKey="date"
+                                                    tick={{
+                                                        fill: "#68707b",
+                                                        fontSize: 11
+                                                    }}
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                />
+
+                                                <YAxis
+                                                    allowDecimals={false}
+                                                    tick={{
+                                                        fill: "#68707b",
+                                                        fontSize: 11
+                                                    }}
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                />
+
+                                                <Tooltip />
+
+                                                <Legend
+                                                    wrapperStyle={{
+                                                        fontSize: 11
+                                                    }}
+                                                />
+
+                                                {team.members.map((member, index) => (
+                                                    <Line
+                                                        key={member.name}
+                                                        type="monotone"
+                                                        dataKey={member.name}
+                                                        name={member.name}
+                                                        stroke={colors[index % colors.length]}
+                                                        strokeWidth={2.5}
+                                                        dot={{
+                                                            r: 3
+                                                        }}
+                                                        activeDot={{
+                                                            r: 5
+                                                        }}
+                                                        connectNulls={false}
+                                                    />
+                                                ))}
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                )}
+                            </Paper>
+                        );
+                    })}
+                </div>
+            </section>
+        );
+    };
+
+    render() {
+        const teams = this.getCurrentTeams();
+        const salesData = this.getCurrentSalesData();
+
+        const salespersonTotals = this.getSalespersonTotals(
+            teams,
+            salesData
+        );
+
+        const results = this.getTeamResults(
+            teams,
+            salespersonTotals
+        );
+
+        const summary = this.getSummary(results);
+        const monthLabel = this.getMonthLabel();
+
+        return (
+            <main className="competition-page">
+                <header className="competition-page-header">
+                    <div>
+                        <span className="competition-eyebrow">
+                            MONTHLY PERFORMANCE
+                        </span>
+
+                        <h1>Competition & Charts</h1>
+
+                        <p>
+                            Track team rankings, analyze individual
+                            performance, and monitor monthly sales.
+                        </p>
+                    </div>
+
+                    <Chip
+                        label={monthLabel}
+                        className="competition-month-chip"
+                    />
+                </header>
+
+                {teams.length === 0 ? (
+                    <div className="competition-empty-state">
+                        <GroupsRoundedIcon />
+
+                        <h2>No Teams for {monthLabel}</h2>
+
+                        <p>
+                            Create teams for the current month
+                            to start tracking competition results.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {this.renderSummary(results)}
+
+                        <div className="competition-section-heading">
+                            <div>
+                                <h2>Team Leaderboard</h2>
+                                <p>
+                                    Current rankings based on total
+                                    vehicles sold.
+                                </p>
+                            </div>
+
+                            <div className="competition-report-actions">
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<PrintRoundedIcon />}
+                                    onClick={this.handlePrint}
+                                    className="competition-print-button"
+                                >
+                                    Print Charts
+                                </Button>
+
+                                <Button
+                                    variant="contained"
+                                    startIcon={<PictureAsPdfRoundedIcon />}
+                                    onClick={this.handleDownload}
+                                    disabled={this.state.downloading}
+                                    className="competition-pdf-button"
+                                >
+                                    {this.state.downloading
+                                        ? "Generating..."
+                                        : "Download PDF"}
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div ref={this.reportRef}>
+                            <section className="competition-teams-grid">
+                                {results.map((team, index) => {
+                                    return this.renderTeamCard(
+                                        team,
+                                        index,
+                                        summary.topSales
+                                    );
+                                })}
+                            </section>
+
+                            {this.renderBarChart(results)}
+
+                            {this.renderLineCharts(results, salesData)}
+                        </div>
+                    </>
+                )}
+            </main>
+        );
+    }
 }
 
 export default CompetitionAndCharts;

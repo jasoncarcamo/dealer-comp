@@ -1,105 +1,328 @@
-/* ---------- FORM WRAPPER ---------- */
+
+/* =========================================
+   BONUS FORM
+========================================= */
+
 .bonus-form {
-  display: flex;
-  flex-direction: column;
-  max-width: 320px;
-  padding: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  background: #ffffffee;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  overflow: hidden;
-  animation: none; /* default */
+    --bonus-form-red: #eb0a1e;
+    --bonus-form-ink: #191b20;
+    --bonus-form-muted: #68707b;
+    --bonus-form-border: #e7e9ee;
+
+    width: 100%;
+    color: var(--bonus-form-ink);
+    font-family: "Inter", "Roboto", Arial, sans-serif;
 }
 
-/* ---------- DROP-DOWN ANIMATION ---------- */
-.drop-down {
-  animation: dropDown 0.35s ease forwards;
+.bonus-form *,
+.bonus-form *::before,
+.bonus-form *::after {
+    box-sizing: border-box;
 }
 
-@keyframes dropDown {
-  0% {
-    opacity: 0;
-    max-height: 0;
-    transform: translateY(-20px);
-  }
-  50% {
-    opacity: 0.5;
-    max-height: 100px;
-    transform: translateY(-10px);
-  }
-  100% {
+/* =========================================
+   INTRODUCTION
+========================================= */
+
+.bonus-form-intro {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 27px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--bonus-form-border);
+}
+
+.bonus-form-intro-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    background: #fff0f1;
+    color: var(--bonus-form-red);
+    border-radius: 11px;
+}
+
+.bonus-form-intro-icon .MuiSvgIcon-root {
+    font-size: 23px;
+}
+
+.bonus-form-intro h3 {
+    margin: 0;
+    color: var(--bonus-form-ink);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.bonus-form-intro p {
+    margin: 6px 0 0;
+    color: var(--bonus-form-muted);
+    font-size: 0.8rem;
+    line-height: 1.6;
+}
+
+/* =========================================
+   FORM GRID
+========================================= */
+
+.bonus-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 23px 20px;
+}
+
+.bonus-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+}
+
+.bonus-form-field--full {
+    grid-column: 1 / -1;
+}
+
+.bonus-form-field > label {
+    color: #343941;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.bonus-form-field > label span {
+    margin-left: 4px;
+    color: var(--bonus-form-red);
+}
+
+.bonus-form-field .MuiOutlinedInput-root {
+    background: #ffffff;
+    border-radius: 9px;
+    font-size: 0.88rem;
+}
+
+.bonus-form-field .MuiOutlinedInput-root fieldset {
+    border-color: #dce0e6;
+}
+
+.bonus-form-field .MuiOutlinedInput-root:hover fieldset {
+    border-color: #aeb5bf;
+}
+
+.bonus-form-field .MuiOutlinedInput-root.Mui-focused fieldset {
+    border-color: var(--bonus-form-red);
+    border-width: 2px;
+}
+
+.bonus-form-field .MuiInputAdornment-root {
+    color: #7a838e;
+}
+
+.bonus-form-field .MuiInputAdornment-root .MuiSvgIcon-root {
+    font-size: 20px;
+}
+
+.bonus-form-field .MuiInputBase-input {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.bonus-form-field .MuiInputBase-input::placeholder {
+    color: #9aa1ab;
     opacity: 1;
-    max-height: 500px;
-    transform: translateY(0);
-  }
 }
 
-/* ---------- FORM TITLE ---------- */
-.form-title {
-  font-size: 20px;
-  margin-bottom: 12px;
-  font-weight: 600;
+.bonus-form-field textarea {
+    line-height: 1.7;
 }
 
-/* ---------- INPUTS ---------- */
-.bonus-form input {
-  margin-bottom: 10px;
-  padding: 8px 10px;
-  border: 1px solid #bbb;
-  border-radius: 6px;
-  font-size: 14px;
+.bonus-form-helper {
+    margin: 0;
+    color: #8b929d;
+    font-size: 0.73rem;
+    line-height: 1.6;
 }
 
-/* ---------- LABELS ---------- */
-.bonus-form label {
-  font-size: 13px;
-  margin-top: 8px;
-  opacity: 0.75;
-  font-weight: 500;
+/* =========================================
+   ERROR MESSAGE
+========================================= */
+
+.bonus-form-error {
+    margin-bottom: 22px;
+    padding: 14px 16px;
+    background: #fff1f2;
+    border: 1px solid #f4cdd2;
+    border-radius: 9px;
+    color: #aa1020;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.6;
 }
 
-/* ---------- ERROR MESSAGE ---------- */
-.error {
-  color: #e53935;
-  margin-bottom: 10px;
-  font-size: 13px;
+/* =========================================
+   FOOTER
+========================================= */
+
+.bonus-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 30px;
+    padding-top: 23px;
+    border-top: 1px solid var(--bonus-form-border);
 }
 
-/* ---------- BUTTONS ---------- */
-.form-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
+.bonus-form-footer > p {
+    margin: 0;
+    color: #9299a3;
+    font-size: 0.74rem;
 }
 
-.submit-btn {
-  padding: 8px 14px;
-  cursor: pointer;
-  background: #2d6cdf;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background 0.2s ease;
+.bonus-form-footer > p strong {
+    color: var(--bonus-form-red);
 }
 
-.submit-btn:hover {
-  background: #1e4fb7;
+.bonus-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 11px;
 }
 
-.cancel-btn {
-  padding: 8px 14px;
-  cursor: pointer;
-  background: #555;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background 0.2s ease;
+.bonus-form-cancel-button.MuiButton-root {
+    min-height: 42px;
+    padding: 10px 18px;
+    color: #626a75;
+    border-color: #d8dce2;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: none;
+    white-space: nowrap;
 }
 
-.cancel-btn:hover {
-  background: #333;
+.bonus-form-cancel-button.MuiButton-root:hover {
+    background: #f5f6f8;
+    border-color: #b9bec7;
+}
+
+.bonus-form-submit-button.MuiButton-root {
+    min-height: 42px;
+    padding: 10px 20px;
+    background: var(--bonus-form-red);
+    color: #ffffff;
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.bonus-form-submit-button.MuiButton-root {
+    background: #c5091b;
+    box-shadow: none;
+}
+
+.bonus-form-submit-button.MuiButton-root.Mui-disabled {
+    background: #e8e9ec;
+    color: #a1a6ae;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media screen and (max-width: 800px) {
+    .bonus-form-grid {
+        gap: 18px;
+    }
+
+    .bonus-form-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bonus-form-actions {
+        justify-content: flex-end;
+    }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media screen and (max-width: 600px) {
+    .bonus-form-intro {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .bonus-form-intro-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .bonus-form-intro h3 {
+        font-size: 0.95rem;
+    }
+
+    .bonus-form-grid {
+        grid-template-columns: 1fr;
+        gap: 19px;
+    }
+
+    .bonus-form-field--full {
+        grid-column: auto;
+    }
+
+    .bonus-form-footer {
+        gap: 18px;
+    }
+
+    .bonus-form-actions {
+        width: 100%;
+    }
+
+    .bonus-form-actions .MuiButton-root {
+        flex: 1;
+    }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media screen and (max-width: 400px) {
+    .bonus-form-intro p {
+        font-size: 0.74rem;
+    }
+
+    .bonus-form-actions {
+        flex-direction: column;
+    }
+
+    .bonus-form-actions .MuiButton-root {
+        width: 100%;
+    }
+}
+
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
+.bonus-form button:focus-visible,
+.bonus-form input:focus-visible,
+.bonus-form textarea:focus-visible {
+    outline: 3px solid rgba(235, 10, 30, 0.4);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bonus-form *,
+    .bonus-form *::before,
+    .bonus-form *::after {
+        transition: none !important;
+        animation: none !important;
+    }
 }

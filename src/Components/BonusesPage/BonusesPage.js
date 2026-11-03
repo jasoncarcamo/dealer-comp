@@ -1,190 +1,537 @@
+
 import React, { Component } from "react";
+
+import {
+    Button,
+    Chip,
+    CircularProgress
+} from "@mui/material";
+
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import CardGiftcardRoundedIcon from "@mui/icons-material/CardGiftcardRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+
 import BonusesList from "./BonusesList/BonusesList";
 import BonusForm from "./BonusesForm/BonusesForm";
-import "./BonusesPage.css";
-import FetchBonuses from "../../Services/FetchServices/FetchBonuses";
 import ConfirmationMessage from "../ConfrimationMessage/ConfirmationMessage";
+
+import FetchBonuses from "../../Services/FetchServices/FetchBonuses";
 import BonusesStorage from "../../Services/StorageService/BonusesStorage";
 import TokenService from "../../Services/StorageService/TokenService";
+
+import "./BonusesPage.css";
 
 export default class BonusesPage extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
-        bonuses: JSON.parse(BonusesStorage.getBonuses()) || [],
-        editingBonus: null,
-        open: false,
-        confirmationVisible: false,
-        confirmationMessage: "",
-        action: null,
-        showForm: false,
-        expandList: false,
-        newlyAddedId: null
-    };
-}
-
-
-componentDidMount(){
-}
-
-toggleForm = () => {
-    this.setState((prev) => ({ showForm: !prev.showForm }));
-  };
-
-onCloseConfirmation = () => {
-    this.setState({ confirmationVisible: false, confirmationMessage: "" });
-};
-
-expandLists = ()=>{
-    this.setState({
-        expandList: true
-    })
-}
-
-toggleExpandList = ()=>{
-    this.setState({
-        expandList: !this.state.expandList
-    })
-}
-
-addBonus = (bonus) => {
-    FetchBonuses.createBonus(bonus)
-        .then(saved => {
-            BonusesStorage.saveBonuses(BonusesStorage.addBonus(saved.createdBonus))
-            this.setState(
-                prev => ({
-                  bonuses: JSON.parse(BonusesStorage.getBonuses()),
-                  confirmationVisible: true,
-                  confirmationMessage: "Bonus added successfully!",
-                  expandList: true,
-                  newlyAddedId: saved.createdBonus.id
-                })
-              );
-        })
-        .catch(err => console.error("Error adding bonus", err));
-};
-
-removeBonus = (id) => {
-    FetchBonuses.deleteBonusById(id)
-            .then( deletedBonus => {
-                BonusesStorage.deleteBonus(deletedBonus.deletedBonus);
-                this.setState(prev => ({
-                    bonuses: JSON.parse(BonusesStorage.getBonuses()),
-                    confirmationVisible: true,
-                    confirmationMessage: "Bonus removed"
-                }));
-            });
-};
-
-
-startEdit = (bonus) => {
-    this.setState({ editingBonus: bonus });
-};
-
-saveEdit = (updateBonus) => {
-    FetchBonuses.patchBonusById(updateBonus, updateBonus.id)
-        .then(patchedBonus => {
-
-            BonusesStorage.editBonus(patchedBonus);
-            this.setState({
-                bonuses: JSON.parse(BonusesStorage.getBonuses())
-            });
-        })
-        .catch(err => console.log(err))
-};
-
-
-cancelEdit = () => {
-    this.setState({ editingBonus: null });
-};
-
-isSameDay(d1, d2) {
-    return d1.toLocaleDateString("en-US", {
-        timeZone: "UTC",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    }) === d2.toLocaleDateString("en-US", {
-        timeZone: "UTC",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    })
-}
-
-render() {
-    const { bonuses, editingBonus } = this.state;
-    const today = new Date(); 
-    let current = [];
-    let past = [];
-
-    today.setHours(0, 0, 0, 0);
-
-    for(const yearKey in bonuses){
-        if(Number(yearKey) === today.getFullYear()){
-            let current_bonuses = bonuses[yearKey][today.getMonth()];
-
-            for(const monthKey in current_bonuses){
-                const start_date = new Date(current_bonuses[monthKey].start_date);
-                const end_date = new Date(current_bonuses[monthKey].end_date);
-
-                start_date.setHours(0, 0, 0, 0);
-                end_date.setHours(23, 59, 59, 999); // include the entire end_date day
-
-                if (start_date <= today && end_date >= today || this.isSameDay(today, end_date) === true) {
-                    current.push(current_bonuses[monthKey]);
-                };
-            };
+            bonuses: this.getStoredBonuses(),
+            editingBonus: null,
+            confirmationVisible: false,
+            confirmationMessage: "",
+            showForm: false,
+            expandList: false,
+            newlyAddedId: null,
+            loading: false,
+            error: ""
         };
+    }
 
-        const months = bonuses[yearKey];
+    getStoredBonuses = () => {
+        try {
+            const stored = BonusesStorage.getBonuses();
 
-        for (const monthKey in months) {
-            const monthBonuses = months[monthKey];
+            if (!stored) {
+                return {};
+            }
 
-            for (const bonus of monthBonuses) {
-                if (new Date(bonus.end_date) < today && this.isSameDay(today, new Date(bonus.end_date)) === false) {
-                    past.push(bonus);
-                }
+            const parsed = typeof stored === "string"
+                ? JSON.parse(stored)
+                : stored;
+
+            return parsed && typeof parsed === "object"
+                ? parsed
+                : {};
+        } catch (error) {
+            console.error("Unable to read stored bonuses:", error);
+            return {};
+        }
+    };
+
+    getLocalDateKey = (date) => {
+        return [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0")
+        ].join("-");
+    };
+
+    normalizeDate = (value) => {
+        if (!value) {
+            return "";
+        }
+
+        if (typeof value === "string") {
+            const match = value.match(/^\d{4}-\d{2}-\d{2}/);
+
+            if (match) {
+                return match[0];
             }
         }
-    }
-    
-    return (
-    <div className="bonuses-page fade-in">
-    <h1 className="title">Sales Bonuses</h1>
 
-    <ConfirmationMessage
-        message={this.state.confirmationMessage}
-        visible={this.state.confirmationVisible}
-        onClose={this.onCloseConfirmation}
-    />
+        const date = new Date(value);
 
-    {TokenService.getToken() ? (
-        <button className="toggle-form-btn" onClick={this.toggleForm}>
-        {this.state.showForm ? "Hide Form" : "Add New Bonus"}
-    </button>
-    ) : ""}
+        if (Number.isNaN(date.getTime())) {
+            return "";
+        }
 
-    {this.state.showForm && <BonusForm
-    onAdd={this.addBonus}
-    onSaveEdit={this.saveEdit}
-    editingBonus={editingBonus}
-    onCancel={this.cancelEdit}
-    />}
-    
-    
-    <section>
-    <h2 className="section-title">Current Bonuses</h2>
-    <BonusesList newlyAddedId={this.state.newlyAddedId}  bonuses={current} onRemove={this.removeBonus} onEdit={this.startEdit}  onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} current_bonuses={true}/>
-    </section>
-    
-    
-    <section>
-    <h2 className="section-title">Past Bonuses</h2>
-    <BonusesList newlyAddedId={this.state.newlyAddedId}  bonuses={past} onRemove={this.removeBonus} onEdit={this.startEdit} onSaveEdit={this.saveEdit} expandList={this.state.expandList} expandLists={this.expandLists} toggleExpandList={this.toggleExpandList} past_bonuses={true}/>
-    </section>
-    </div>
-    );
+        return this.getLocalDateKey(date);
+    };
+
+    getAllBonuses = () => {
+        const { bonuses } = this.state;
+
+        if (Array.isArray(bonuses)) {
+            return bonuses;
+        }
+
+        if (!bonuses || typeof bonuses !== "object") {
+            return [];
+        }
+
+        const result = [];
+
+        Object.values(bonuses).forEach((months) => {
+            if (!months || typeof months !== "object") {
+                return;
+            }
+
+            Object.values(months).forEach((monthBonuses) => {
+                if (Array.isArray(monthBonuses)) {
+                    result.push(...monthBonuses);
+                }
+            });
+        });
+
+        return result.filter(Boolean);
+    };
+
+    getCategorizedBonuses = () => {
+        const today = this.getLocalDateKey(new Date());
+        const allBonuses = this.getAllBonuses();
+
+        const current = [];
+        const upcoming = [];
+        const past = [];
+
+        allBonuses.forEach((bonus) => {
+            const startDate = this.normalizeDate(bonus.start_date);
+            const endDate = this.normalizeDate(bonus.end_date);
+
+            if (!startDate || !endDate) {
+                return;
+            }
+
+            if (endDate < today) {
+                past.push(bonus);
+            } else if (startDate > today) {
+                upcoming.push(bonus);
+            } else {
+                current.push(bonus);
+            }
+        });
+
+        current.sort((a, b) => {
+            return this.normalizeDate(a.end_date).localeCompare(
+                this.normalizeDate(b.end_date)
+            );
+        });
+
+        upcoming.sort((a, b) => {
+            return this.normalizeDate(a.start_date).localeCompare(
+                this.normalizeDate(b.start_date)
+            );
+        });
+
+        past.sort((a, b) => {
+            return this.normalizeDate(b.end_date).localeCompare(
+                this.normalizeDate(a.end_date)
+            );
+        });
+
+        return {
+            current,
+            upcoming,
+            past
+        };
+    };
+
+    toggleForm = () => {
+        this.setState((previousState) => ({
+            showForm: !previousState.showForm,
+            editingBonus: previousState.showForm
+                ? null
+                : previousState.editingBonus
+        }));
+    };
+
+    onCloseConfirmation = () => {
+        this.setState({
+            confirmationVisible: false,
+            confirmationMessage: ""
+        });
+    };
+
+    showConfirmation = (message) => {
+        this.setState({
+            confirmationVisible: true,
+            confirmationMessage: message
+        });
+    };
+
+    expandLists = () => {
+        this.setState({
+            expandList: true
+        });
+    };
+
+    toggleExpandList = () => {
+        this.setState((previousState) => ({
+            expandList: !previousState.expandList
+        }));
+    };
+
+    addBonus = async (bonus) => {
+        this.setState({
+            loading: true,
+            error: ""
+        });
+
+        try {
+            const saved = await FetchBonuses.createBonus(bonus);
+
+            if (!saved || !saved.createdBonus) {
+                throw new Error("The server did not return the new bonus.");
+            }
+
+            const updated = BonusesStorage.addBonus(saved.createdBonus);
+
+            if (updated !== undefined) {
+                BonusesStorage.saveBonuses(updated);
+            }
+
+            this.setState({
+                bonuses: this.getStoredBonuses(),
+                loading: false,
+                showForm: false,
+                editingBonus: null,
+                expandList: true,
+                newlyAddedId: saved.createdBonus.id
+            });
+
+            this.showConfirmation("Bonus added successfully!");
+        } catch (error) {
+            console.error("Error adding bonus:", error);
+
+            this.setState({
+                loading: false,
+                error: "Unable to add bonus. Please try again."
+            });
+        }
+    };
+
+    removeBonus = async (id) => {
+        this.setState({
+            loading: true,
+            error: ""
+        });
+
+        try {
+            const response = await FetchBonuses.deleteBonusById(id);
+
+            if (!response || !response.deletedBonus) {
+                throw new Error("The server did not confirm deletion.");
+            }
+
+            BonusesStorage.deleteBonus(response.deletedBonus);
+
+            this.setState({
+                bonuses: this.getStoredBonuses(),
+                loading: false,
+                newlyAddedId: null
+            });
+
+            this.showConfirmation("Bonus removed successfully.");
+        } catch (error) {
+            console.error("Error removing bonus:", error);
+
+            this.setState({
+                loading: false,
+                error: "Unable to remove bonus. Please try again."
+            });
+        }
+    };
+
+    startEdit = (bonus) => {
+        this.setState({
+            editingBonus: bonus,
+            showForm: true,
+            error: ""
+        });
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    };
+
+    saveEdit = async (updatedBonus) => {
+        this.setState({
+            loading: true,
+            error: ""
+        });
+
+        try {
+            const response = await FetchBonuses.patchBonusById(
+                updatedBonus,
+                updatedBonus.id
+            );
+
+            BonusesStorage.editBonus(response);
+
+            this.setState({
+                bonuses: this.getStoredBonuses(),
+                editingBonus: null,
+                showForm: false,
+                loading: false,
+                newlyAddedId: null
+            });
+
+            this.showConfirmation("Bonus updated successfully.");
+        } catch (error) {
+            console.error("Error updating bonus:", error);
+
+            this.setState({
+                loading: false,
+                error: "Unable to update bonus. Please try again."
+            });
+        }
+    };
+
+    cancelEdit = () => {
+        this.setState({
+            editingBonus: null,
+            showForm: false
+        });
+    };
+
+    renderSummary = (categorized) => {
+        const cards = [
+            {
+                label: "Active Bonuses",
+                value: categorized.current.length,
+                icon: <CardGiftcardRoundedIcon />
+            },
+            {
+                label: "Upcoming Bonuses",
+                value: categorized.upcoming.length,
+                icon: <CalendarMonthRoundedIcon />
+            },
+            {
+                label: "Past Bonuses",
+                value: categorized.past.length,
+                icon: <HistoryRoundedIcon />
+            }
+        ];
+
+        return (
+            <section
+                className="bonuses-summary"
+                aria-label="Bonus overview"
+            >
+                {cards.map((card) => (
+                    <article
+                        className="bonuses-stat-card"
+                        key={card.label}
+                    >
+                        <div className="bonuses-stat-icon">
+                            {card.icon}
+                        </div>
+
+                        <div className="bonuses-stat-content">
+                            <span>{card.label}</span>
+                            <strong>{card.value}</strong>
+                        </div>
+                    </article>
+                ))}
+            </section>
+        );
+    };
+
+    renderBonusSection = (title, description, bonuses, type) => {
+        const {
+            newlyAddedId,
+            expandList
+        } = this.state;
+
+        return (
+            <section
+                className="bonuses-section"
+                aria-labelledby={`bonuses-${type}-title`}
+            >
+                <div className="bonuses-section-header">
+                    <div>
+                        <h2 id={`bonuses-${type}-title`}>
+                            {title}
+                        </h2>
+
+                        <p>{description}</p>
+                    </div>
+
+                    <Chip
+                        label={`${bonuses.length} Bonuses`}
+                        className="bonuses-count-chip"
+                    />
+                </div>
+
+                <div className="bonuses-list-panel">
+                    <BonusesList
+                        newlyAddedId={newlyAddedId}
+                        bonuses={bonuses}
+                        onRemove={this.removeBonus}
+                        onEdit={this.startEdit}
+                        onSaveEdit={this.saveEdit}
+                        expandList={expandList}
+                        expandLists={this.expandLists}
+                        toggleExpandList={this.toggleExpandList}
+                        current_bonuses={type === "current"}
+                        past_bonuses={type === "past"}
+                    />
+                </div>
+            </section>
+        );
+    };
+
+    render() {
+        const {
+            editingBonus,
+            showForm,
+            loading,
+            error
+        } = this.state;
+
+        const categorized = this.getCategorizedBonuses();
+        const canManage = Boolean(TokenService.getToken());
+
+        return (
+            <main className="bonuses-page">
+                <ConfirmationMessage
+                    message={this.state.confirmationMessage}
+                    visible={this.state.confirmationVisible}
+                    onClose={this.onCloseConfirmation}
+                />
+
+                <header className="bonuses-page-header">
+                    <div>
+                        <span className="bonuses-eyebrow">
+                            SALES INCENTIVES
+                        </span>
+
+                        <h1>Sales Bonuses</h1>
+
+                        <p>
+                            Stay informed about active incentives,
+                            upcoming opportunities, and previous
+                            sales bonuses.
+                        </p>
+                    </div>
+
+                    {canManage && (
+                        <Button
+                            variant="contained"
+                            startIcon={
+                                showForm
+                                    ? <CloseRoundedIcon />
+                                    : <AddRoundedIcon />
+                            }
+                            onClick={this.toggleForm}
+                            disabled={loading}
+                            className="bonuses-primary-button"
+                        >
+                            {showForm ? "Close Form" : "Add New Bonus"}
+                        </Button>
+                    )}
+                </header>
+
+                {error && (
+                    <div
+                        className="bonuses-error"
+                        role="alert"
+                    >
+                        {error}
+                    </div>
+                )}
+
+                {showForm && canManage && (
+                    <section className="bonuses-form-section">
+                        <div className="bonuses-form-header">
+                            <div>
+                                <h2>
+                                    {editingBonus
+                                        ? "Edit Sales Bonus"
+                                        : "Create Sales Bonus"}
+                                </h2>
+
+                                <p>
+                                    {editingBonus
+                                        ? "Update the selected incentive."
+                                        : "Enter the details for a new incentive."}
+                                </p>
+                            </div>
+                        </div>
+
+                        <BonusForm
+                            onAdd={this.addBonus}
+                            onSaveEdit={this.saveEdit}
+                            editingBonus={editingBonus}
+                            onCancel={this.cancelEdit}
+                        />
+                    </section>
+                )}
+
+                {loading && (
+                    <div className="bonuses-loading" role="status">
+                        <CircularProgress size={20} />
+                        <span>Processing bonus...</span>
+                    </div>
+                )}
+
+                {this.renderSummary(categorized)}
+
+                {this.renderBonusSection(
+                    "Current Bonuses",
+                    "Incentives available during today's date.",
+                    categorized.current,
+                    "current"
+                )}
+
+                {this.renderBonusSection(
+                    "Upcoming Bonuses",
+                    "Incentives scheduled to begin in the future.",
+                    categorized.upcoming,
+                    "upcoming"
+                )}
+
+                {this.renderBonusSection(
+                    "Past Bonuses",
+                    "Previously offered sales incentives.",
+                    categorized.past,
+                    "past"
+                )}
+            </main>
+        );
     }
-    }
+}
