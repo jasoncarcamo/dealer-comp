@@ -50,11 +50,15 @@ export default class BonusesPage extends Component {
                 loading: true
             });
         }
+    }
 
-        this.setState({
-            bonuses: stored,
-            laoding: false
-        });
+    componentDidUpdate(prevProps) {
+
+        if(this.state.loading){
+            this.setState({
+                loading: false
+            });
+        }
     }
 
     getStoredBonuses = () => {
@@ -177,10 +181,6 @@ export default class BonusesPage extends Component {
             return this.normalizeDate(b.end_date).localeCompare(
                 this.normalizeDate(a.end_date)
             );
-        });
-
-        this.setState({
-            loading: false
         });
 
         return {
