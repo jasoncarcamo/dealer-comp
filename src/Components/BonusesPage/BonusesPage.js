@@ -179,6 +179,10 @@ export default class BonusesPage extends Component {
             );
         });
 
+        this.setState({
+            loading: false
+        });
+
         return {
             current,
             upcoming,
