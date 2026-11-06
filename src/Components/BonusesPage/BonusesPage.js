@@ -50,6 +50,10 @@ export default class BonusesPage extends Component {
                 loading: true
             });
         }
+
+        this.setState({
+            bonuses: this.getStoredBonuses()
+        });
     }
 
     componentDidUpdate(prevProps) {
@@ -112,11 +116,12 @@ export default class BonusesPage extends Component {
         return this.getLocalDateKey(date);
     };
 
+    
     getAllBonuses = () => {
-        const { bonuses } = this.props;
+        const { bonuses } = this.state;
 
         if (Array.isArray(bonuses)) {
-            return bonuses;
+            return bonuses.filter(Boolean);
         }
 
         if (!bonuses || typeof bonuses !== "object") {
@@ -139,6 +144,7 @@ export default class BonusesPage extends Component {
 
         return result.filter(Boolean);
     };
+
 
     getCategorizedBonuses = () => {
         const today = this.getLocalDateKey(new Date());
@@ -225,6 +231,7 @@ export default class BonusesPage extends Component {
         }));
     };
 
+    
     addBonus = async (bonus) => {
         this.setState({
             loading: true,
@@ -238,7 +245,9 @@ export default class BonusesPage extends Component {
                 throw new Error("The server did not return the new bonus.");
             }
 
-            const updated = BonusesStorage.addBonus(saved.createdBonus);
+            const createdBonus = saved.createdBonus;
+
+            const updated = BonusesStorage.addBonus(createdBonus);
 
             if (updated !== undefined) {
                 BonusesStorage.saveBonuses(updated);
@@ -250,10 +259,11 @@ export default class BonusesPage extends Component {
                 showForm: false,
                 editingBonus: null,
                 expandList: true,
-                newlyAddedId: saved.createdBonus.id
+                newlyAddedId: createdBonus.id
             });
 
             this.showConfirmation("Bonus added successfully!");
+
         } catch (error) {
             console.error("Error adding bonus:", error);
 
@@ -261,8 +271,11 @@ export default class BonusesPage extends Component {
                 loading: false,
                 error: "Unable to add bonus. Please try again."
             });
+
+            throw error;
         }
     };
+
 
     removeBonus = async (id) => {
         this.setState({
@@ -537,13 +550,6 @@ export default class BonusesPage extends Component {
                     "Incentives available during today's date.",
                     categorized.current,
                     "current"
-                )}
-
-                {this.renderBonusSection(
-                    "Upcoming Bonuses",
-                    "Incentives scheduled to begin in the future.",
-                    categorized.upcoming,
-                    "upcoming"
                 )}
 
                 {this.renderBonusSection(
