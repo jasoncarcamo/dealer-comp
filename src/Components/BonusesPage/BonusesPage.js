@@ -118,7 +118,7 @@ export default class BonusesPage extends Component {
 
     
     getAllBonuses = () => {
-        const { bonuses } = this.state;
+        const { bonuses } = this.props;
 
         if (Array.isArray(bonuses)) {
             return bonuses.filter(Boolean);
